@@ -14,4 +14,4 @@ ruff>=0.2.0
 pre-commit>=3.6.0
 
 # Integration requirements
-alnor-sdk>=0.1.0
+alnor-sdk>=0.2.0
