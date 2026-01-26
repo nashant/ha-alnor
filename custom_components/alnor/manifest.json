@@ -1,12 +1,16 @@
 {
   "domain": "alnor",
   "name": "Alnor Ventilation",
-  "codeowners": ["@nashant"],
+  "codeowners": [
+    "@nashant"
+  ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/nashant/ha-alnor",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/nashant/ha-alnor/issues",
-  "requirements": ["alnor-sdk>=0.1.0"],
-  "version": "0.1.0"
+  "requirements": [
+    "alnor-sdk>=0.1.0"
+  ],
+  "version": "1.0.0"
 }
