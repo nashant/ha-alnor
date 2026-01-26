@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1](https://github.com/nashant/ha-alnor/compare/v1.1.0...v1.1.1) (2026-01-26)
+
+
+### Bug Fixes
+
+* **coordinator:** use correct SDK API response keys ([02907b5](https://github.com/nashant/ha-alnor/commit/02907b54ceaa72edfb4e5fd9a69d2d04d9dba41d))
+
 ## [1.1.0](https://github.com/nashant/ha-alnor/compare/v1.0.1...v1.1.0) (2026-01-26)
 
 
