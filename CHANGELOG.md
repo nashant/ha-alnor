@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2](https://github.com/nashant/ha-alnor/compare/v1.0.1...v1.0.2) (2026-01-26)
+
+
+### Bug Fixes
+
+* **ci:** Use sdk correctly ([e38cac5](https://github.com/nashant/ha-alnor/commit/e38cac5cb3c421002cbfbd1e11f69c3c03c5f4ac))
+
 ## [1.0.1](https://github.com/nashant/ha-alnor/compare/v1.0.0...v1.0.1) (2026-01-26)
 
 
