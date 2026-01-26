@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1](https://github.com/nashant/ha-alnor/compare/v1.0.0...v1.0.1) (2026-01-26)
+
+
+### Bug Fixes
+
+* **ci:** Only test python 3.13 ([9cf4117](https://github.com/nashant/ha-alnor/commit/9cf41174731a62bf3101ce060d9c69ed6d4e6877))
+
 ## 1.0.0 (2026-01-26)
 
 
