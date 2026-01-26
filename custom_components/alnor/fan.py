@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from alnor_sdk.models import DeviceMode, ProductType
+from alnor_sdk.models import ProductType, VentilationMode
 from homeassistant.components.fan import FanEntity, FanEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -39,10 +39,8 @@ async def async_setup_entry(
     for device_id, device in coordinator.devices.items():
         # Only create fan for HRU and exhaust fans
         if device.product_type in [
-            ProductType.HRU_PREMAIR_450,
-            ProductType.HRU_PREMAIR_500,
-            ProductType.VMC_02VJ04,
-            ProductType.VMC_EXHAUST_FAN,
+            ProductType.HEAT_RECOVERY_UNIT,
+            ProductType.EXHAUST_FAN,
         ]:
             if device_id in coordinator.controllers:
                 entities.append(AlnorFan(coordinator, device_id))
@@ -62,12 +60,12 @@ class AlnorFan(AlnorEntity, FanEntity):
     )
 
     _attr_preset_modes = [
-        DeviceMode.STANDBY.value,
-        DeviceMode.AWAY.value,
-        DeviceMode.HOME.value,
-        DeviceMode.HOME_PLUS.value,
-        DeviceMode.AUTO.value,
-        DeviceMode.PARTY.value,
+        VentilationMode.STANDBY.value,
+        VentilationMode.AWAY.value,
+        VentilationMode.HOME.value,
+        VentilationMode.HOME_PLUS.value,
+        VentilationMode.AUTO.value,
+        VentilationMode.PARTY.value,
     ]
 
     def __init__(
@@ -141,7 +139,7 @@ class AlnorFan(AlnorEntity, FanEntity):
             return
 
         try:
-            mode = DeviceMode(preset_mode)
+            mode = VentilationMode(preset_mode)
             await controller.set_mode(mode)
             await self.coordinator.async_request_refresh()
         except ValueError:

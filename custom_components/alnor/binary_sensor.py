@@ -33,10 +33,8 @@ async def async_setup_entry(
     # Add fault sensor for HRU and exhaust fan devices
     for device_id, device in coordinator.devices.items():
         if device.product_type in [
-            ProductType.HRU_PREMAIR_450,
-            ProductType.HRU_PREMAIR_500,
-            ProductType.VMC_02VJ04,
-            ProductType.VMC_EXHAUST_FAN,
+            ProductType.HEAT_RECOVERY_UNIT,
+            ProductType.EXHAUST_FAN,
         ]:
             entities.append(AlnorFaultSensor(coordinator, device_id))
             _LOGGER.debug("Added fault sensor for device %s", device.name)

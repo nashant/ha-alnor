@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from alnor_sdk import AlnorCloudApi, CloudClient, ModbusClient
+from alnor_sdk.communication import AlnorCloudApi, CloudClient, ModbusClient
 from alnor_sdk.controllers import (
     BaseDeviceController,
     ExhaustFanController,
@@ -47,6 +47,7 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         self.api: AlnorCloudApi | None = None
         self.bridges: list[dict[str, Any]] = []
         self.devices: dict[str, Device] = {}
+        self.device_to_bridge: dict[str, str] = {}  # Map device_id -> bridge_id
 
         # Client storage (dual-mode support)
         self.cloud_clients: dict[str, CloudClient] = {}
@@ -176,16 +177,29 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                 for device_data in devices:
                     device_id = device_data["id"]
 
+                    # Get product type from product_id
+                    product_id = device_data.get("productId", "")
+                    product_type = ProductType.from_product_id(product_id)
+                    if not product_type:
+                        _LOGGER.warning(
+                            "Unknown product ID %s for device %s, skipping",
+                            product_id,
+                            device_id,
+                        )
+                        continue
+
                     # Create Device object
                     device = Device(
                         device_id=device_id,
+                        product_id=product_id,
                         name=device_data.get("name", "Unknown Device"),
-                        product_type=ProductType(device_data.get("productType", "unknown")),
-                        host=device_data.get("host"),
-                        bridge_id=bridge_id,
+                        product_type=product_type,
+                        host=device_data.get("host", ""),
+                        zone_id=device_data.get("zoneId"),
                     )
 
                     self.devices[device_id] = device
+                    self.device_to_bridge[device_id] = bridge_id
 
                     # Set up connection (local or cloud)
                     await self._setup_device_connection(device, device_id)
@@ -270,25 +284,19 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
     ) -> BaseDeviceController | None:
         """Create controller for device type."""
         # Map product type to controller
-        if device.product_type in [
-            ProductType.HRU_PREMAIR_450,
-            ProductType.HRU_PREMAIR_500,
-        ]:
-            return HeatRecoveryUnitController(client)
+        if device.product_type == ProductType.HEAT_RECOVERY_UNIT:
+            return HeatRecoveryUnitController(client, device.device_id, device.product_id)
+
+        elif device.product_type == ProductType.EXHAUST_FAN:
+            return ExhaustFanController(client, device.device_id, device.product_id)
 
         elif device.product_type in [
-            ProductType.VMC_02VJ04,
-            ProductType.VMC_EXHAUST_FAN,
+            ProductType.CO2_SENSOR_VMI,
+            ProductType.CO2_SENSOR_VMS,
+            ProductType.HUMIDITY_SENSOR_VMI,
+            ProductType.HUMIDITY_SENSOR_VMS,
         ]:
-            return ExhaustFanController(client)
-
-        elif device.product_type in [
-            ProductType.VMS_02C05,
-            ProductType.VMI_02MC02,
-            ProductType.SENSOR_CO2,
-            ProductType.SENSOR_HUMIDITY,
-        ]:
-            return SensorController(client)
+            return SensorController(client, device.device_id, device.product_id)
 
         # Unknown device type
         _LOGGER.warning(
@@ -363,11 +371,13 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             return DeviceInfo(identifiers={(DOMAIN, device_id)})
 
         # Find the bridge for this device
+        bridge_id = self.device_to_bridge.get(device_id)
         bridge = None
-        for b in self.bridges:
-            if b["id"] == device.bridge_id:
-                bridge = b
-                break
+        if bridge_id:
+            for b in self.bridges:
+                if b["id"] == bridge_id:
+                    bridge = b
+                    break
 
         device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},

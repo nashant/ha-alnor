@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from alnor_sdk.models import DeviceMode, ProductType
+from alnor_sdk.models import ProductType, VentilationMode
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -30,10 +30,8 @@ async def async_setup_entry(
     # Add mode select for HRU and exhaust fan devices
     for device_id, device in coordinator.devices.items():
         if device.product_type in [
-            ProductType.HRU_PREMAIR_450,
-            ProductType.HRU_PREMAIR_500,
-            ProductType.VMC_02VJ04,
-            ProductType.VMC_EXHAUST_FAN,
+            ProductType.HEAT_RECOVERY_UNIT,
+            ProductType.EXHAUST_FAN,
         ]:
             if device_id in coordinator.controllers:
                 entities.append(AlnorModeSelect(coordinator, device_id))
@@ -46,12 +44,12 @@ class AlnorModeSelect(AlnorEntity, SelectEntity):
     """Representation of an Alnor mode select."""
 
     _attr_options = [
-        DeviceMode.STANDBY.value,
-        DeviceMode.AWAY.value,
-        DeviceMode.HOME.value,
-        DeviceMode.HOME_PLUS.value,
-        DeviceMode.AUTO.value,
-        DeviceMode.PARTY.value,
+        VentilationMode.STANDBY.value,
+        VentilationMode.AWAY.value,
+        VentilationMode.HOME.value,
+        VentilationMode.HOME_PLUS.value,
+        VentilationMode.AUTO.value,
+        VentilationMode.PARTY.value,
     ]
 
     def __init__(
@@ -80,7 +78,7 @@ class AlnorModeSelect(AlnorEntity, SelectEntity):
             return
 
         try:
-            mode = DeviceMode(option)
+            mode = VentilationMode(option)
             await controller.set_mode(mode)
             await self.coordinator.async_request_refresh()
         except ValueError:

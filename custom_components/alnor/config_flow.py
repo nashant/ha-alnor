@@ -7,7 +7,7 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-from alnor_sdk import AlnorCloudApi, ModbusClient
+from alnor_sdk.communication import AlnorCloudApi, ModbusClient
 from alnor_sdk.exceptions import CloudAuthenticationError
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME

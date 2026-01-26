@@ -46,7 +46,7 @@ HRU_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda state: state.indoor_temperature,
-        product_types=[ProductType.HRU_PREMAIR_450, ProductType.HRU_PREMAIR_500],
+        product_types=[ProductType.HEAT_RECOVERY_UNIT],
     ),
     AlnorSensorEntityDescription(
         key="outdoor_temperature",
@@ -55,7 +55,7 @@ HRU_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda state: state.outdoor_temperature,
-        product_types=[ProductType.HRU_PREMAIR_450, ProductType.HRU_PREMAIR_500],
+        product_types=[ProductType.HEAT_RECOVERY_UNIT],
     ),
     AlnorSensorEntityDescription(
         key="exhaust_temperature",
@@ -64,7 +64,7 @@ HRU_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda state: state.exhaust_temperature,
-        product_types=[ProductType.HRU_PREMAIR_450, ProductType.HRU_PREMAIR_500],
+        product_types=[ProductType.HEAT_RECOVERY_UNIT],
     ),
     AlnorSensorEntityDescription(
         key="supply_temperature",
@@ -73,7 +73,7 @@ HRU_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda state: state.supply_temperature,
-        product_types=[ProductType.HRU_PREMAIR_450, ProductType.HRU_PREMAIR_500],
+        product_types=[ProductType.HEAT_RECOVERY_UNIT],
     ),
     AlnorSensorEntityDescription(
         key="exhaust_fan_speed",
@@ -82,7 +82,7 @@ HRU_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:fan",
         value_fn=lambda state: state.exhaust_fan_speed,
-        product_types=[ProductType.HRU_PREMAIR_450, ProductType.HRU_PREMAIR_500],
+        product_types=[ProductType.HEAT_RECOVERY_UNIT],
     ),
     AlnorSensorEntityDescription(
         key="supply_fan_speed",
@@ -91,7 +91,7 @@ HRU_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:fan",
         value_fn=lambda state: state.supply_fan_speed,
-        product_types=[ProductType.HRU_PREMAIR_450, ProductType.HRU_PREMAIR_500],
+        product_types=[ProductType.HEAT_RECOVERY_UNIT],
     ),
     AlnorSensorEntityDescription(
         key="filter_days_remaining",
@@ -100,7 +100,7 @@ HRU_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:air-filter",
         value_fn=lambda state: state.filter_days_remaining,
-        product_types=[ProductType.HRU_PREMAIR_450, ProductType.HRU_PREMAIR_500],
+        product_types=[ProductType.HEAT_RECOVERY_UNIT],
     ),
     AlnorSensorEntityDescription(
         key="bypass_position",
@@ -109,7 +109,7 @@ HRU_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:valve",
         value_fn=lambda state: state.bypass_position,
-        product_types=[ProductType.HRU_PREMAIR_450, ProductType.HRU_PREMAIR_500],
+        product_types=[ProductType.HEAT_RECOVERY_UNIT],
     ),
     AlnorSensorEntityDescription(
         key="preheater_demand",
@@ -118,7 +118,7 @@ HRU_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:radiator",
         value_fn=lambda state: state.preheater_demand,
-        product_types=[ProductType.HRU_PREMAIR_450, ProductType.HRU_PREMAIR_500],
+        product_types=[ProductType.HEAT_RECOVERY_UNIT],
     ),
 )
 
@@ -131,7 +131,7 @@ EXHAUST_FAN_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:fan",
         value_fn=lambda state: state.speed,
-        product_types=[ProductType.VMC_02VJ04, ProductType.VMC_EXHAUST_FAN],
+        product_types=[ProductType.EXHAUST_FAN],
     ),
 )
 
@@ -144,7 +144,7 @@ CO2_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda state: state.co2_level,
-        product_types=[ProductType.VMS_02C05, ProductType.SENSOR_CO2],
+        product_types=[ProductType.CO2_SENSOR_VMI, ProductType.CO2_SENSOR_VMS],
     ),
 )
 
@@ -157,7 +157,7 @@ HUMIDITY_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda state: state.temperature,
-        product_types=[ProductType.VMI_02MC02, ProductType.SENSOR_HUMIDITY],
+        product_types=[ProductType.HUMIDITY_SENSOR_VMI, ProductType.HUMIDITY_SENSOR_VMS],
     ),
     AlnorSensorEntityDescription(
         key="humidity",
@@ -166,7 +166,7 @@ HUMIDITY_SENSORS: tuple[AlnorSensorEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda state: state.humidity,
-        product_types=[ProductType.VMI_02MC02, ProductType.SENSOR_HUMIDITY],
+        product_types=[ProductType.HUMIDITY_SENSOR_VMI, ProductType.HUMIDITY_SENSOR_VMS],
     ),
 )
 

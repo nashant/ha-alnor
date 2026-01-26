@@ -29,10 +29,7 @@ async def async_setup_entry(
 
     # Add filter reset button for HRU devices only
     for device_id, device in coordinator.devices.items():
-        if device.product_type in [
-            ProductType.HRU_PREMAIR_450,
-            ProductType.HRU_PREMAIR_500,
-        ]:
+        if device.product_type == ProductType.HEAT_RECOVERY_UNIT:
             if device_id in coordinator.controllers:
                 entities.append(AlnorFilterResetButton(coordinator, device_id))
                 _LOGGER.debug("Added filter reset button for device %s", device.name)
