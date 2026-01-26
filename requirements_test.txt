@@ -1,0 +1,17 @@
+# Test requirements for ha-alnor
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-homeassistant-custom-component>=0.13.0
+homeassistant>=2024.1.0
+
+# Linting and formatting
+black>=24.1.0
+isort>=5.13.0
+ruff>=0.2.0
+
+# Pre-commit
+pre-commit>=3.6.0
+
+# Integration requirements
+alnor-sdk>=0.1.0

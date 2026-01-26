@@ -1,0 +1,54 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Alnor Cloud",
+        "description": "Enter your Alnor cloud credentials to connect your ventilation devices.",
+        "data": {
+          "username": "Email",
+          "password": "Password",
+          "sync_zones": "Synchronize zones with Home Assistant areas"
+        },
+        "data_description": {
+          "sync_zones": "Automatically create Alnor zones matching your Home Assistant areas"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid email or password. Please check your credentials.",
+      "cannot_connect": "Cannot connect to Alnor cloud. Check your internet connection and try again.",
+      "timeout": "Connection timed out. Please try again.",
+      "unknown": "An unexpected error occurred. Please try again."
+    },
+    "abort": {
+      "already_configured": "This Alnor account is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alnor Options",
+        "description": "Configure zone synchronization and local connections.",
+        "data": {
+          "sync_zones": "Synchronize zones with Home Assistant areas",
+          "configure_local": "Configure local Modbus TCP connections"
+        },
+        "data_description": {
+          "sync_zones": "Automatically create Alnor zones matching your Home Assistant areas",
+          "configure_local": "Set up local IP addresses for faster response and offline operation"
+        }
+      },
+      "local_config": {
+        "title": "Local Modbus TCP Configuration",
+        "description": "Configure local IP addresses for each device. Leave empty to use cloud API only.\n\nDevices:\n{device_info}\n\nNote: Local connections use Modbus TCP on port 502. Ensure this port is accessible on your network.",
+        "data_description": {
+          "local_ip": "Optional: Enter device IP address for local Modbus TCP connection (port 502)"
+        }
+      }
+    },
+    "error": {
+      "timeout": "Connection to device timed out. Check the IP address and network connectivity.",
+      "cannot_connect": "Cannot connect to device at this IP address. Verify the IP is correct and port 502 is accessible."
+    }
+  }
+}
