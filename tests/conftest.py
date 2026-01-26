@@ -6,6 +6,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from alnor_sdk.models import Device, DeviceState, ProductType, VentilationMode
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(enable_custom_integrations):
+    """Enable custom integrations defined in the test dir."""
+    yield
 
 
 @pytest.fixture
@@ -40,13 +47,13 @@ def mock_api():
                 "id": "device_exhaust_1",
                 "name": "Bathroom Fan",
                 "productId": "0001c844",
-                "host": None,
+                "host": "",
             },
             {
                 "id": "device_co2_1",
                 "name": "Office CO2 Sensor",
                 "productId": "0001c845",
-                "host": None,
+                "host": "",
             },
         ]
     )
@@ -177,18 +184,16 @@ def mock_device_co2():
 @pytest.fixture
 def mock_config_entry():
     """Mock ConfigEntry."""
-    from homeassistant.config_entries import ConfigEntry
-
-    entry = MagicMock(spec=ConfigEntry)
-    entry.entry_id = "test_entry_id"
-    entry.data = {
-        CONF_USERNAME: "test@example.com",
-        CONF_PASSWORD: "test_password",
-    }
-    entry.options = {
-        "sync_zones": True,
-        "local_ips": {},
-    }
-    entry.add_update_listener = MagicMock()
-    entry.async_on_unload = MagicMock()
-    return entry
+    return MockConfigEntry(
+        domain="alnor",
+        title="test@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "test_password",
+        },
+        options={
+            "sync_zones": True,
+            "local_ips": {},
+        },
+        unique_id="test@example.com",
+    )

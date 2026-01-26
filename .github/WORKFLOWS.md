@@ -9,7 +9,6 @@ This document describes the automated workflows configured for this repository.
 | Test | Push/PR to `main` | Run tests and linting |
 | Release | Manual dispatch | Manual semantic versioning and releases |
 | Validate Commits | Pull requests | Ensure commit messages follow conventional commits |
-| Pre-commit | Push/PR | Run code quality checks |
 
 ## Workflows
 
@@ -92,33 +91,6 @@ docs: update installation instructions
 Added new feature          # Missing type
 feat add sensor            # Missing colon
 FEAT: new sensor           # Type must be lowercase
-```
-
----
-
-### 4. Pre-commit (`pre-commit.yml`)
-
-**Triggers:**
-- Push to `main`
-- Pull requests
-
-**Checks:**
-- Trailing whitespace
-- End of file fixes
-- YAML/JSON validation
-- Large file detection
-- Merge conflict markers
-- Code formatting (Black)
-- Import sorting (isort)
-- Linting (Ruff)
-- Markdown formatting (Prettier)
-- Spelling (Codespell)
-
-**Local Development:**
-Install pre-commit hooks to run checks before committing:
-```bash
-pip install pre-commit
-pre-commit install
 ```
 
 ---
@@ -274,6 +246,5 @@ git commit -m "docs: update installation instructions"
 
 - `.releaserc.json` - Semantic release configuration
 - `.commitlintrc.json` - Commit message linting rules
-- `.pre-commit-config.yaml` - Pre-commit hook configuration
 - `pyproject.toml` - Python tool configuration (Black, isort, Ruff, pytest)
 - `scripts/update_version.py` - Version update script for releases

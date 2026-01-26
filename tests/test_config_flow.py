@@ -51,7 +51,7 @@ async def test_user_form_invalid_auth(hass: HomeAssistant, mock_api) -> None:
     )
 
     # Make authentication fail
-    mock_api.connect.side_effect = CloudAuthenticationError("Invalid credentials")
+    mock_api.connect.side_effect = CloudAuthenticationError(401, "Invalid credentials")
 
     with patch(
         "custom_components.alnor.config_flow.AlnorCloudApi",
@@ -98,10 +98,10 @@ async def test_user_form_cannot_connect(hass: HomeAssistant, mock_api) -> None:
 
 async def test_user_form_already_configured(hass: HomeAssistant, mock_api) -> None:
     """Test duplicate configuration."""
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
     # Create an existing entry
-    existing_entry = config_entries.ConfigEntry(
-        version=1,
-        minor_version=1,
+    existing_entry = MockConfigEntry(
         domain=DOMAIN,
         title="test@example.com",
         data={
@@ -109,7 +109,6 @@ async def test_user_form_already_configured(hass: HomeAssistant, mock_api) -> No
             CONF_PASSWORD: "test_password",
         },
         options={},
-        source=config_entries.SOURCE_USER,
         unique_id="test@example.com",
     )
     existing_entry.add_to_hass(hass)

@@ -68,6 +68,7 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             _LOGGER,
             name=DOMAIN,
             update_interval=update_interval,
+            config_entry=config_entry,
         )
 
     async def _async_update_data(self) -> dict[str, DeviceState]:
@@ -383,7 +384,13 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             identifiers={(DOMAIN, device_id)},
             name=device.name,
             manufacturer="Alnor",
-            model=device.product_type.value if device.product_type else "Unknown",
+            model=(
+                device.product_type.value
+                if hasattr(device.product_type, "value")
+                else str(device.product_type)
+            )
+            if device.product_type
+            else "Unknown",
         )
 
         # Link to bridge

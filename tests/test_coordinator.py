@@ -25,6 +25,8 @@ async def test_coordinator_setup(
     mock_sensor_controller,
 ) -> None:
     """Test coordinator setup."""
+    mock_config_entry.add_to_hass(hass)
+
     with (
         patch(
             "custom_components.alnor.coordinator.AlnorCloudApi",
@@ -47,7 +49,7 @@ async def test_coordinator_setup(
         ),
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
-        await coordinator.async_config_entry_first_refresh()
+        await coordinator.async_refresh()
 
     # Verify API was connected
     mock_api.connect.assert_called_once()
@@ -73,6 +75,8 @@ async def test_coordinator_update(
     mock_hru_controller,
 ) -> None:
     """Test coordinator data update."""
+    mock_config_entry.add_to_hass(hass)
+
     with (
         patch(
             "custom_components.alnor.coordinator.AlnorCloudApi",
@@ -93,7 +97,7 @@ async def test_coordinator_update(
         ),
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
-        await coordinator.async_config_entry_first_refresh()
+        await coordinator.async_refresh()
 
         # Verify get_state was called for each controller
         assert mock_hru_controller.get_state.call_count >= 1
@@ -105,8 +109,10 @@ async def test_coordinator_auth_failure(
     mock_api,
 ) -> None:
     """Test coordinator handles authentication failure."""
+    mock_config_entry.add_to_hass(hass)
+
     # Make API connection fail with auth error
-    mock_api.connect.side_effect = CloudAuthenticationError("Invalid credentials")
+    mock_api.connect.side_effect = CloudAuthenticationError(401, "Invalid credentials")
 
     with (
         patch(
@@ -117,7 +123,7 @@ async def test_coordinator_auth_failure(
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
 
         with pytest.raises(ConfigEntryAuthFailed):
-            await coordinator.async_config_entry_first_refresh()
+            await coordinator.async_refresh()
 
 
 async def test_coordinator_connection_failure(
@@ -126,6 +132,8 @@ async def test_coordinator_connection_failure(
     mock_api,
 ) -> None:
     """Test coordinator handles connection failure."""
+    mock_config_entry.add_to_hass(hass)
+
     # Make API connection fail
     mock_api.connect.side_effect = Exception("Connection error")
 
@@ -138,7 +146,7 @@ async def test_coordinator_connection_failure(
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
 
         with pytest.raises(UpdateFailed):
-            await coordinator.async_config_entry_first_refresh()
+            await coordinator.async_refresh()
 
 
 async def test_coordinator_local_connection(
@@ -149,6 +157,8 @@ async def test_coordinator_local_connection(
     mock_hru_controller,
 ) -> None:
     """Test coordinator with local Modbus connection."""
+    mock_config_entry.add_to_hass(hass)
+
     # Configure local IP for device
     mock_config_entry.options[CONF_LOCAL_IPS] = {
         "device_hru_1": "192.168.1.100",
@@ -178,7 +188,7 @@ async def test_coordinator_local_connection(
         ),
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
-        await coordinator.async_config_entry_first_refresh()
+        await coordinator.async_refresh()
 
         # Verify Modbus connection was attempted
         mock_modbus_client.connect.assert_called()
@@ -195,6 +205,8 @@ async def test_coordinator_local_fallback_to_cloud(
     mock_hru_controller,
 ) -> None:
     """Test coordinator falls back to cloud when local fails."""
+    mock_config_entry.add_to_hass(hass)
+
     # Configure local IP for device
     mock_config_entry.options[CONF_LOCAL_IPS] = {
         "device_hru_1": "192.168.1.100",
@@ -227,7 +239,7 @@ async def test_coordinator_local_fallback_to_cloud(
         ),
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
-        await coordinator.async_config_entry_first_refresh()
+        await coordinator.async_refresh()
 
         # Verify connection mode fell back to cloud
         assert coordinator.connection_modes.get("device_hru_1") == CONNECTION_MODE_CLOUD
@@ -241,6 +253,8 @@ async def test_coordinator_per_device_error_handling(
     mock_exhaust_controller,
 ) -> None:
     """Test coordinator handles per-device errors gracefully."""
+    mock_config_entry.add_to_hass(hass)
+
     # Make one controller fail
     mock_hru_controller.get_state.side_effect = Exception("Device error")
 
@@ -265,7 +279,7 @@ async def test_coordinator_per_device_error_handling(
         ),
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
-        await coordinator.async_config_entry_first_refresh()
+        await coordinator.async_refresh()
 
         # Verify other devices still have data
         assert "device_exhaust_1" in coordinator.data
@@ -280,6 +294,8 @@ async def test_coordinator_zone_sync(
     mock_api,
 ) -> None:
     """Test coordinator zone synchronization."""
+    mock_config_entry.add_to_hass(hass)
+
     # Enable zone sync
     mock_config_entry.options["sync_zones"] = True
 
@@ -309,7 +325,7 @@ async def test_coordinator_zone_sync(
         ),
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
-        await coordinator.async_config_entry_first_refresh()
+        await coordinator.async_refresh()
 
         # Verify zones were checked/created
         mock_api.list_zones.assert_called()
@@ -323,6 +339,8 @@ async def test_coordinator_get_device_info(
     mock_api,
 ) -> None:
     """Test coordinator get_device_info helper."""
+    mock_config_entry.add_to_hass(hass)
+
     with (
         patch(
             "custom_components.alnor.coordinator.AlnorCloudApi",
@@ -342,7 +360,7 @@ async def test_coordinator_get_device_info(
         ),
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
-        await coordinator.async_config_entry_first_refresh()
+        await coordinator.async_refresh()
 
         device_info = coordinator.get_device_info("device_hru_1")
 
