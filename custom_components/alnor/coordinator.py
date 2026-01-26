@@ -161,11 +161,21 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         try:
             self.bridges = await self.api.get_bridges()
             _LOGGER.info("Discovered %d bridge(s)", len(self.bridges))
+            _LOGGER.debug("Bridge data: %s", self.bridges)
 
             # Get devices for each bridge
             for bridge in self.bridges:
-                bridge_id = bridge["id"]
-                bridge_name = bridge.get("name", bridge_id)
+                # Bridge might be a Device object or dict - handle both
+                if hasattr(bridge, "device_id"):
+                    bridge_id = bridge.device_id
+                    bridge_name = getattr(bridge, "name", bridge_id)
+                else:
+                    bridge_id = bridge.get("id") or bridge.get("device_id")
+                    bridge_name = bridge.get("name", bridge_id)
+
+                if not bridge_id:
+                    _LOGGER.warning("Bridge missing ID, skipping: %s", bridge)
+                    continue
 
                 devices = await self.api.get_devices(bridge_id)
                 _LOGGER.info(
@@ -173,13 +183,27 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                     len(devices),
                     bridge_name,
                 )
+                _LOGGER.debug("Device data for bridge %s: %s", bridge_id, devices)
 
                 # Set up each device
                 for device_data in devices:
-                    device_id = device_data["id"]
+                    # Device might be a Device object or dict - handle both
+                    if hasattr(device_data, "device_id"):
+                        device_id = device_data.device_id
+                    else:
+                        device_id = device_data.get("id") or device_data.get("device_id")
+
+                    if not device_id:
+                        _LOGGER.warning("Device missing ID, skipping: %s", device_data)
+                        continue
 
                     # Get product type from product_id
-                    product_id = device_data.get("productId", "")
+                    if hasattr(device_data, "product_id"):
+                        product_id = device_data.product_id
+                    else:
+                        product_id = device_data.get("productId") or device_data.get(
+                            "product_id", ""
+                        )
                     product_type = ProductType.from_product_id(product_id)
                     if not product_type:
                         _LOGGER.warning(
@@ -190,14 +214,18 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                         continue
 
                     # Create Device object
-                    device = Device(
-                        device_id=device_id,
-                        product_id=product_id,
-                        name=device_data.get("name", "Unknown Device"),
-                        product_type=product_type,
-                        host=device_data.get("host", ""),
-                        zone_id=device_data.get("zoneId"),
-                    )
+                    # If device_data is already a Device object, use it directly
+                    if isinstance(device_data, Device):
+                        device = device_data
+                    else:
+                        device = Device(
+                            device_id=device_id,
+                            product_id=product_id,
+                            name=device_data.get("name", "Unknown Device"),
+                            product_type=product_type,
+                            host=device_data.get("host", ""),
+                            zone_id=device_data.get("zoneId"),
+                        )
 
                     self.devices[device_id] = device
                     self.device_to_bridge[device_id] = bridge_id
@@ -206,7 +234,7 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                     await self._setup_device_connection(device, device_id)
 
         except Exception as err:
-            _LOGGER.error("Failed to discover devices: %s", err)
+            _LOGGER.error("Failed to discover devices: %s", err, exc_info=True)
             raise UpdateFailed(f"Failed to discover devices: {err}") from err
 
         # Sync zones if enabled

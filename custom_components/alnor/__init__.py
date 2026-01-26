@@ -46,9 +46,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Unload platforms
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
-    # Remove coordinator
+    # Clean up coordinator and API connection
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
+        coordinator: AlnorDataUpdateCoordinator = hass.data[DOMAIN].pop(entry.entry_id)
+        # Close API session to prevent unclosed client warnings
+        if coordinator.api:
+            try:
+                await coordinator.api.disconnect()
+            except Exception as err:
+                _LOGGER.warning("Error disconnecting from Alnor API: %s", err)
 
     return unload_ok
 
