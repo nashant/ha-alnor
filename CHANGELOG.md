@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1](https://github.com/nashant/ha-alnor/compare/v1.0.0...v1.0.1) (2026-01-26)
+
+
+### Bug Fixes
+
+* **config:** update AlnorCloudApi usage and add reauth flow ([5dfc4a4](https://github.com/nashant/ha-alnor/commit/5dfc4a484e4562f800e8770440bc1aeb38138393))
+
 ## 1.0.0 (2026-01-26)
 
 
