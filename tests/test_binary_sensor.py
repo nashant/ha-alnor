@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from alnor_sdk.models import DeviceMode, DeviceState
+from alnor_sdk.models import DeviceState, VentilationMode
 from homeassistant.core import HomeAssistant
 
 from custom_components.alnor.const import ATTR_FAULT_CODE
@@ -59,8 +59,9 @@ async def test_binary_sensor_fault_detected(
     """Test binary sensor detects faults."""
     # Set up controller with fault
     mock_hru_controller.get_state.return_value = DeviceState(
+        device_id="device_hru_1",
         speed=50,
-        mode=DeviceMode.HOME,
+        mode=VentilationMode.HOME,
         indoor_temperature=22.5,
         outdoor_temperature=10.0,
         exhaust_temperature=21.0,

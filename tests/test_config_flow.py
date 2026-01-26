@@ -218,12 +218,13 @@ async def test_options_flow_local_config(
         coordinator.devices = {
             "device1": Device(
                 device_id="device1",
+                product_id="0001c89f",
                 name="Device 1",
-                product_type=ProductType.HRU_PREMAIR_450,
-                host=None,
-                bridge_id="bridge123",
+                product_type=ProductType.HEAT_RECOVERY_UNIT,
+                host="",
             ),
         }
+        coordinator.device_to_bridge = {"device1": "bridge123"}
 
     # Start options flow
     result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
@@ -292,12 +293,13 @@ async def test_options_flow_local_config_invalid_ip(
         coordinator.devices = {
             "device1": Device(
                 device_id="device1",
+                product_id="0001c89f",
                 name="Device 1",
-                product_type=ProductType.HRU_PREMAIR_450,
-                host=None,
-                bridge_id="bridge123",
+                product_type=ProductType.HEAT_RECOVERY_UNIT,
+                host="",
             ),
         }
+        coordinator.device_to_bridge = {"device1": "bridge123"}
 
     # Start options flow and navigate to local config
     result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)

@@ -7,7 +7,7 @@ This document describes the automated workflows configured for this repository.
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | Test | Push/PR to `main` | Run tests and linting |
-| Release | Push to `main` | Automated semantic versioning and releases |
+| Release | Manual dispatch | Manual semantic versioning and releases |
 | Validate Commits | Pull requests | Ensure commit messages follow conventional commits |
 | Pre-commit | Push/PR | Run code quality checks |
 
@@ -43,8 +43,8 @@ This document describes the automated workflows configured for this repository.
 ### 2. Release (`release.yml`)
 
 **Triggers:**
-- Push to `main` branch
-- Skips if commit message contains `[skip ci]`
+- Manual trigger only (via GitHub Actions UI)
+- Must be manually dispatched after tests pass
 
 **Semantic Versioning Rules:**
 - `feat` commits → Minor version bump (0.1.0 → 0.2.0)
@@ -140,7 +140,7 @@ chore(deps): bump actions/checkout from 3 to 4
 
 ## Release Process
 
-### Automatic Release (Recommended)
+### Manual Release via GitHub Actions (Recommended)
 
 1. Make changes and commit using conventional commits:
    ```bash
@@ -149,29 +149,38 @@ chore(deps): bump actions/checkout from 3 to 4
    ```
 
 2. Merge your PR to `main` branch:
+   - Ensure all tests pass
    - Merge approved pull request via GitHub UI
    - Or push directly to main (if you have permissions)
 
-3. Release workflow automatically:
-   - Determines version (e.g., 0.2.0)
-   - Updates manifest.json
-   - Creates CHANGELOG.md entry
-   - Creates Git tag and GitHub release
-   - Builds and attaches ZIP package
+3. Manually trigger release workflow:
+   - Go to GitHub Actions tab
+   - Select "Release" workflow
+   - Click "Run workflow" button
+   - Select `main` branch
+   - Click "Run workflow"
 
-### Manual Release (Not Recommended)
+4. Release workflow will:
+   - Determine version based on commits (e.g., 0.2.0)
+   - Update manifest.json
+   - Create CHANGELOG.md entry
+   - Create Git tag and GitHub release
+   - Build and attach ZIP package
 
-If you need to manually create a release:
+### Manual Release via Git (Alternative)
+
+If GitHub Actions is unavailable:
 
 1. Update version in `manifest.json`
-2. Create Git tag:
+2. Update `CHANGELOG.md`
+3. Create Git tag:
    ```bash
    git tag v0.2.0
    git push origin v0.2.0
    ```
-3. Create release on GitHub with ZIP package
+4. Create release on GitHub with ZIP package
 
-**Note:** Manual releases should be avoided as they bypass the automated changelog and version management.
+**Note:** Using semantic-release via GitHub Actions is preferred as it automates changelog and version management.
 
 ---
 
@@ -222,16 +231,17 @@ git commit -m "docs: update installation instructions"
 
 ### Release Not Created
 
-**Symptom:** Pushed to main but no release was created
+**Symptom:** Manually triggered release but no release was created
 
 **Possible causes:**
 1. Commits don't follow conventional commits format
-2. All commits are types that don't trigger releases (`chore`, `test`, `ci`, `style`)
-3. Commit message contains `[skip ci]`
+2. All commits since last release are types that don't trigger releases (`chore`, `test`, `ci`, `style`)
+3. No commits since last release
 
 **Solution:**
 - Check commit messages in GitHub
-- Ensure at least one commit has type `feat`, `fix`, or `BREAKING CHANGE`
+- Ensure at least one commit since last release has type `feat`, `fix`, or `BREAKING CHANGE`
+- Check semantic-release logs in GitHub Actions for details
 
 ### Test Failure
 

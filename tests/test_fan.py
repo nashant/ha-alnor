@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from alnor_sdk.models import DeviceMode
+from alnor_sdk.models import VentilationMode
 
 from homeassistant.components.fan import (
     ATTR_PERCENTAGE,
@@ -230,4 +230,4 @@ async def test_fan_set_preset_mode(
             blocking=True,
         )
 
-        mock_hru_controller.set_mode.assert_called_with(DeviceMode.AWAY)
+        mock_hru_controller.set_mode.assert_called_with(VentilationMode.AWAY)

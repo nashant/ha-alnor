@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from alnor_sdk.models import DeviceMode
+from alnor_sdk.models import VentilationMode
 
 from homeassistant.components.select import (
     ATTR_OPTION,
@@ -96,7 +96,7 @@ async def test_select_option(
             blocking=True,
         )
 
-        mock_hru_controller.set_mode.assert_called_with(DeviceMode.PARTY)
+        mock_hru_controller.set_mode.assert_called_with(VentilationMode.PARTY)
 
 
 async def test_select_available_options(

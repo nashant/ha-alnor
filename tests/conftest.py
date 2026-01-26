@@ -4,12 +4,12 @@ from collections.abc import Generator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from alnor_sdk.models import Device, DeviceMode, DeviceState, ProductType
+from alnor_sdk.models import Device, DeviceState, ProductType, VentilationMode
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 
 
 @pytest.fixture
-def mock_setup_entry() -> Generator[AsyncMock, None, None]:
+def mock_setup_entry() -> Generator[AsyncMock]:
     """Mock setting up a config entry."""
     with patch("custom_components.alnor.async_setup_entry", return_value=True) as mock_setup:
         yield mock_setup
@@ -33,19 +33,19 @@ def mock_api():
             {
                 "id": "device_hru_1",
                 "name": "Living Room HRU",
-                "productType": "HRU_PREMAIR_450",
+                "productId": "0001c89f",
                 "host": "192.168.1.100",
             },
             {
                 "id": "device_exhaust_1",
                 "name": "Bathroom Fan",
-                "productType": "VMC_02VJ04",
+                "productId": "0001c844",
                 "host": None,
             },
             {
                 "id": "device_co2_1",
                 "name": "Office CO2 Sensor",
-                "productType": "VMS_02C05",
+                "productId": "0001c845",
                 "host": None,
             },
         ]
@@ -83,8 +83,9 @@ def mock_hru_controller():
     controller = MagicMock()
     controller.get_state = AsyncMock(
         return_value=DeviceState(
+            device_id="device_hru_1",
             speed=50,
-            mode=DeviceMode.HOME,
+            mode=VentilationMode.HOME,
             indoor_temperature=22.5,
             outdoor_temperature=10.0,
             exhaust_temperature=21.0,
@@ -110,8 +111,9 @@ def mock_exhaust_controller():
     controller = MagicMock()
     controller.get_state = AsyncMock(
         return_value=DeviceState(
+            device_id="device_exhaust_1",
             speed=60,
-            mode=DeviceMode.AUTO,
+            mode=VentilationMode.AUTO,
             fault_status=0,
             fault_code=0,
         )
@@ -127,6 +129,7 @@ def mock_sensor_controller():
     controller = MagicMock()
     controller.get_state = AsyncMock(
         return_value=DeviceState(
+            device_id="device_co2_1",
             co2_level=650,
             temperature=23.0,
             humidity=45,
@@ -140,10 +143,10 @@ def mock_device_hru():
     """Mock HRU Device."""
     return Device(
         device_id="device_hru_1",
+        product_id="0001c89f",
         name="Living Room HRU",
-        product_type=ProductType.HRU_PREMAIR_450,
+        product_type=ProductType.HEAT_RECOVERY_UNIT,
         host="192.168.1.100",
-        bridge_id="bridge123",
     )
 
 
@@ -152,10 +155,10 @@ def mock_device_exhaust():
     """Mock Exhaust Fan Device."""
     return Device(
         device_id="device_exhaust_1",
+        product_id="0001c844",
         name="Bathroom Fan",
-        product_type=ProductType.VMC_02VJ04,
-        host=None,
-        bridge_id="bridge123",
+        product_type=ProductType.EXHAUST_FAN,
+        host="",
     )
 
 
@@ -164,10 +167,10 @@ def mock_device_co2():
     """Mock CO2 Sensor Device."""
     return Device(
         device_id="device_co2_1",
+        product_id="0001c845",
         name="Office CO2 Sensor",
-        product_type=ProductType.VMS_02C05,
-        host=None,
-        bridge_id="bridge123",
+        product_type=ProductType.CO2_SENSOR_VMS,
+        host="",
     )
 
 

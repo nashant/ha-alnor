@@ -114,23 +114,30 @@ BREAKING CHANGE: The connect() method now requires authentication parameters."
 
 ## Release Process
 
-Releases are **fully automated** using semantic versioning:
+Releases use **manual semantic versioning** via GitHub Actions:
 
-1. When commits are merged to `main`, the release workflow analyzes commit messages
+1. When commits are merged to `main` and tests pass, maintainers manually trigger the release workflow
 
-2. Based on commit types, it determines the version bump:
+2. Based on commit types since the last release, it determines the version bump:
    - `feat` → minor version (0.1.0 → 0.2.0)
    - `fix`, `perf`, `docs`, `refactor` → patch version (0.1.0 → 0.1.1)
    - `BREAKING CHANGE` or `feat!` → major version (0.1.0 → 1.0.0)
 
-3. The workflow automatically:
+3. To manually trigger a release (maintainers only):
+   - Go to GitHub Actions tab
+   - Select "Release" workflow
+   - Click "Run workflow"
+   - Select `main` branch
+   - Click "Run workflow"
+
+4. The workflow automatically:
    - Bumps version in `manifest.json`
    - Generates/updates `CHANGELOG.md`
    - Creates a Git tag
    - Creates a GitHub release with zip package
    - Commits version changes back to the repository
 
-**You don't need to manually update versions or create releases!**
+**Contributors don't need to update versions or create releases - maintainers handle this!**
 
 ## Testing
 
