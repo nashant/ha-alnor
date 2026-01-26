@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2](https://github.com/nashant/ha-alnor/compare/v1.1.1...v1.1.2) (2026-01-26)
+
+
+### Bug Fixes
+
+* **ui:** resize icons to meet Home Assistant requirements ([f949131](https://github.com/nashant/ha-alnor/commit/f949131822282cdd2af039ccbec3a97cac4a99f7))
+
 ## [1.1.1](https://github.com/nashant/ha-alnor/compare/v1.1.0...v1.1.1) (2026-01-26)
 
 
