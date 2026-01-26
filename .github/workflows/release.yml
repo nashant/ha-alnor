@@ -74,7 +74,7 @@ jobs:
           zip -r ../alnor-${{ steps.get_tag.outputs.version }}.zip alnor/
 
       - name: Upload release asset
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.get_tag.outputs.tag }}
           files: alnor-${{ steps.get_tag.outputs.version }}.zip
