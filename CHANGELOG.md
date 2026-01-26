@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0](https://github.com/nashant/ha-alnor/compare/v1.0.1...v1.1.0) (2026-01-26)
+
+
+### Features
+
+* **ui:** add integration icon ([949eac5](https://github.com/nashant/ha-alnor/commit/949eac5225004b1fd69a88b3179e370c3b18103b))
+
+
+### Bug Fixes
+
+* **coordinator:** handle SDK API response format and fix unclosed sessions ([1ed3bfd](https://github.com/nashant/ha-alnor/commit/1ed3bfdb9e59543ba11f503045c2f567bcdc88fc))
+
 ## [1.0.1](https://github.com/nashant/ha-alnor/compare/v1.0.0...v1.0.1) (2026-01-26)
 
 
