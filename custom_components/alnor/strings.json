@@ -12,6 +12,13 @@
         "data_description": {
           "sync_zones": "Automatically create Alnor zones matching your Home Assistant areas"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate with Alnor Cloud",
+        "description": "The credentials for {username} are no longer valid. Please enter your new password.",
+        "data": {
+          "password": "Password"
+        }
       }
     },
     "error": {

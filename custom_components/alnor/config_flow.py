@@ -41,11 +41,11 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             # Validate credentials
             try:
-                api = AlnorCloudApi()
-                await api.connect(
-                    user_input[CONF_USERNAME],
-                    user_input[CONF_PASSWORD],
+                api = AlnorCloudApi(
+                    username=user_input[CONF_USERNAME],
+                    password=user_input[CONF_PASSWORD],
                 )
+                await api.connect()
 
                 # Create entry
                 return self.async_create_entry(
@@ -78,6 +78,50 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             ),
             errors=errors,
+        )
+
+    async def async_step_reauth(self, entry_data: dict[str, Any]) -> FlowResult:
+        """Handle reauth when credentials are invalid."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle reauth confirmation."""
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            # Validate new credentials
+            try:
+                api = AlnorCloudApi(
+                    username=self.context["entry_id"],
+                    password=user_input[CONF_PASSWORD],
+                )
+                await api.connect()
+
+                # Update the config entry with new password
+                return self.async_update_reload_and_abort(
+                    self._get_reauth_entry(),
+                    data={
+                        CONF_USERNAME: self.context["entry_id"],
+                        CONF_PASSWORD: user_input[CONF_PASSWORD],
+                    },
+                )
+
+            except CloudAuthenticationError:
+                errors["base"] = "invalid_auth"
+                _LOGGER.warning("Invalid authentication credentials during reauth")
+
+            except Exception as err:
+                errors["base"] = "cannot_connect"
+                _LOGGER.exception("Unexpected exception during reauth: %s", err)
+
+        # Show reauth form
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema({vol.Required(CONF_PASSWORD): str}),
+            errors=errors,
+            description_placeholders={"username": self.context.get("entry_id", "")},
         )
 
     @staticmethod

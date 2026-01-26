@@ -143,10 +143,10 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         password = self.config_entry.data[CONF_PASSWORD]
 
         # Create and connect to API
-        self.api = AlnorCloudApi()
+        self.api = AlnorCloudApi(username=username, password=password)
 
         try:
-            await self.api.connect(username, password)
+            await self.api.connect()
             _LOGGER.info("Successfully connected to Alnor Cloud API")
 
         except CloudAuthenticationError as err:

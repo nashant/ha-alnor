@@ -26,6 +26,7 @@ def mock_setup_entry() -> Generator[AsyncMock]:
 def mock_api():
     """Mock AlnorCloudApi."""
     api = MagicMock()
+    # SDK now takes credentials in __init__, connect() takes no args
     api.connect = AsyncMock(return_value=None)
     api.get_bridges = AsyncMock(
         return_value=[
