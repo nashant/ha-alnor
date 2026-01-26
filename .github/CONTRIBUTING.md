@@ -104,7 +104,7 @@ BREAKING CHANGE: The connect() method now requires authentication parameters."
 4. **Push your branch** and create a pull request to `develop`
 
 5. **Wait for CI checks** to pass:
-   - Tests must pass on Python 3.11 and 3.12
+   - Tests must pass on Python 3.13
    - Commit messages must follow conventional commits format
    - Code must pass linting checks
 

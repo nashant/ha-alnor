@@ -18,10 +18,9 @@ This guide provides detailed installation instructions for the Alnor Ventilation
 
 ### Required
 
-- ✅ **Home Assistant** 2024.1.0 or newer
+- ✅ **Home Assistant** 2026.1.0 or newer
 - ✅ **Alnor cloud account** with registered devices
 - ✅ **Internet connection** for initial setup and cloud mode
-- ✅ **Python** 3.11 or 3.12
 
 ### Optional (for local Modbus)
 

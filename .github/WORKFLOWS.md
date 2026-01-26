@@ -22,7 +22,7 @@ This document describes the automated workflows configured for this repository.
 **Jobs:**
 
 #### Test
-- Runs on Python 3.11 and 3.12
+- Runs on Python 3.13
 - Installs dependencies from `requirements_test.txt`
 - Executes pytest with coverage
 - Uploads coverage to Codecov (if configured)
@@ -246,7 +246,7 @@ git commit -m "docs: update installation instructions"
 3. Environment-specific issues
 
 **Solution:**
-- Run tests with specific Python version: `python3.11 -m pytest`
+- Run tests with specific Python version: `python3.13 -m pytest`
 - Check GitHub Actions logs for details
 
 ### Commit Validation Failed
