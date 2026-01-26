@@ -6,7 +6,7 @@ This document describes the automated workflows configured for this repository.
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| Test | Push/PR to `main`/`develop` | Run tests and linting |
+| Test | Push/PR to `main` | Run tests and linting |
 | Release | Push to `main` | Automated semantic versioning and releases |
 | Validate Commits | Pull requests | Ensure commit messages follow conventional commits |
 | Pre-commit | Push/PR | Run code quality checks |
@@ -16,8 +16,8 @@ This document describes the automated workflows configured for this repository.
 ### 1. Test (`test.yml`)
 
 **Triggers:**
-- Push to `main` or `develop` branches
-- Pull requests to `main` or `develop` branches
+- Push to `main` branch
+- Pull requests to `main` branch
 
 **Jobs:**
 
@@ -99,7 +99,7 @@ FEAT: new sensor           # Type must be lowercase
 ### 4. Pre-commit (`pre-commit.yml`)
 
 **Triggers:**
-- Push to `main` or `develop`
+- Push to `main`
 - Pull requests
 
 **Checks:**
@@ -148,12 +148,9 @@ chore(deps): bump actions/checkout from 3 to 4
    git commit -m "fix: correct temperature conversion"
    ```
 
-2. Merge to `main` branch:
-   ```bash
-   git checkout main
-   git merge develop
-   git push
-   ```
+2. Merge your PR to `main` branch:
+   - Merge approved pull request via GitHub UI
+   - Or push directly to main (if you have permissions)
 
 3. Release workflow automatically:
    - Determines version (e.g., 0.2.0)
