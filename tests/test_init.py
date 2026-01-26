@@ -1,8 +1,8 @@
 """Test the Alnor integration init."""
-from unittest.mock import AsyncMock, patch
+
+from unittest.mock import patch
 
 import pytest
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -103,8 +103,6 @@ async def test_reload_entry(
     """Test reloading the integration."""
     mock_config_entry.add_to_hass(hass)
 
-    with patch(
-        "homeassistant.config_entries.ConfigEntries.async_reload"
-    ) as mock_reload:
+    with patch("homeassistant.config_entries.ConfigEntries.async_reload") as mock_reload:
         await async_reload_entry(hass, mock_config_entry)
         mock_reload.assert_called_once_with(mock_config_entry.entry_id)

@@ -1,13 +1,11 @@
 """Test the Alnor button platform."""
+
 from unittest.mock import patch
 
-import pytest
-
-from homeassistant.components.button import DOMAIN as BUTTON_DOMAIN, SERVICE_PRESS
+from homeassistant.components.button import DOMAIN as BUTTON_DOMAIN
+from homeassistant.components.button import SERVICE_PRESS
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant
-
-from custom_components.alnor.const import DOMAIN
 
 
 async def test_button_setup(

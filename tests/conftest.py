@@ -1,21 +1,17 @@
 """Fixtures for Alnor integration tests."""
+
 from collections.abc import Generator
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from alnor_sdk.models import Device, DeviceMode, DeviceState, ProductType
 import pytest
-
+from alnor_sdk.models import Device, DeviceMode, DeviceState, ProductType
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-
-from custom_components.alnor.const import DOMAIN
 
 
 @pytest.fixture
 def mock_setup_entry() -> Generator[AsyncMock, None, None]:
     """Mock setting up a config entry."""
-    with patch(
-        "custom_components.alnor.async_setup_entry", return_value=True
-    ) as mock_setup:
+    with patch("custom_components.alnor.async_setup_entry", return_value=True) as mock_setup:
         yield mock_setup
 
 

@@ -1,14 +1,14 @@
 """Config flow for Alnor integration."""
+
 from __future__ import annotations
 
 import asyncio
 import logging
 from typing import Any
 
+import voluptuous as vol
 from alnor_sdk import AlnorCloudApi, ModbusClient
 from alnor_sdk.exceptions import CloudAuthenticationError
-import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
@@ -30,9 +30,7 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
 
@@ -57,9 +55,7 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     },
                     options={
-                        CONF_SYNC_ZONES: user_input.get(
-                            CONF_SYNC_ZONES, DEFAULT_SYNC_ZONES
-                        ),
+                        CONF_SYNC_ZONES: user_input.get(CONF_SYNC_ZONES, DEFAULT_SYNC_ZONES),
                     },
                 )
 
@@ -78,9 +74,7 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(CONF_USERNAME): str,
                     vol.Required(CONF_PASSWORD): str,
-                    vol.Optional(
-                        CONF_SYNC_ZONES, default=DEFAULT_SYNC_ZONES
-                    ): bool,
+                    vol.Optional(CONF_SYNC_ZONES, default=DEFAULT_SYNC_ZONES): bool,
                 }
             ),
             errors=errors,
@@ -103,9 +97,7 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
         self.config_entry = config_entry
         self._devices: list[dict[str, Any]] = []
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
             # Check if user wants to configure local IPs
@@ -122,25 +114,19 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
             )
 
         # Get current options
-        current_sync_zones = self.config_entry.options.get(
-            CONF_SYNC_ZONES, DEFAULT_SYNC_ZONES
-        )
+        current_sync_zones = self.config_entry.options.get(CONF_SYNC_ZONES, DEFAULT_SYNC_ZONES)
 
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Optional(
-                        CONF_SYNC_ZONES, default=current_sync_zones
-                    ): bool,
+                    vol.Optional(CONF_SYNC_ZONES, default=current_sync_zones): bool,
                     vol.Optional("configure_local", default=False): bool,
                 }
             ),
         )
 
-    async def async_step_local_config(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_local_config(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Configure local IP addresses for devices."""
         errors: dict[str, str] = {}
 
@@ -173,7 +159,7 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
                                 device_id,
                             )
 
-                        except asyncio.TimeoutError:
+                        except TimeoutError:
                             errors[ip_key] = "timeout"
                             _LOGGER.warning(
                                 "Timeout connecting to %s for device %s",
@@ -206,7 +192,7 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
         current_local_ips = self.config_entry.options.get(CONF_LOCAL_IPS, {})
         schema_dict = {}
 
-        for device_id, device in coordinator.devices.items():
+        for device_id, _device in coordinator.devices.items():
             ip_key = f"local_ip_{device_id}"
             current_ip = current_local_ips.get(device_id, "")
 
@@ -216,9 +202,7 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
             step_id="local_config",
             data_schema=vol.Schema(schema_dict),
             errors=errors,
-            description_placeholders={
-                "device_info": self._format_device_info(coordinator.devices)
-            },
+            description_placeholders={"device_info": self._format_device_info(coordinator.devices)},
         )
 
     def _format_device_info(self, devices: dict[str, Any]) -> str:

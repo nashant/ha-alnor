@@ -1,7 +1,7 @@
 """Data coordinator for Alnor integration."""
+
 from __future__ import annotations
 
-import asyncio
 import logging
 from typing import Any
 
@@ -14,7 +14,6 @@ from alnor_sdk.controllers import (
 )
 from alnor_sdk.exceptions import CloudAuthenticationError
 from alnor_sdk.models import Device, DeviceState, ProductType
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -24,7 +23,6 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
-    ATTR_CONNECTION_MODE,
     CONF_LOCAL_IPS,
     CONF_SYNC_ZONES,
     CONNECTION_MODE_CLOUD,
@@ -124,9 +122,7 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                         )
 
                 # Log the error and continue
-                _LOGGER.warning(
-                    "Failed to fetch data for device %s: %s", device_id, err
-                )
+                _LOGGER.warning("Failed to fetch data for device %s: %s", device_id, err)
 
         # Adjust update interval based on active connection modes
         if any(mode == CONNECTION_MODE_LOCAL for mode in self.connection_modes.values()):
@@ -232,8 +228,7 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
             except Exception as err:
                 _LOGGER.warning(
-                    "Failed to connect to %s locally at %s:%d: %s. "
-                    "Falling back to cloud.",
+                    "Failed to connect to %s locally at %s:%d: %s. " "Falling back to cloud.",
                     device.name,
                     local_ip,
                     MODBUS_PORT,
@@ -322,9 +317,7 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                 # Note: This assumes the SDK has a list_zones method
                 # If not available, this will raise AttributeError
                 existing_zones = await self.api.list_zones(bridge_id)
-                existing_zone_names = {
-                    zone.get("name", "").lower() for zone in existing_zones
-                }
+                existing_zone_names = {zone.get("name", "").lower() for zone in existing_zones}
 
             except AttributeError:
                 _LOGGER.warning(

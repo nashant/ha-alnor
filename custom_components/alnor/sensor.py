@@ -1,12 +1,12 @@
 """Sensor platform for Alnor integration."""
+
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-import logging
 
 from alnor_sdk.models import DeviceState, ProductType
-
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -193,13 +193,8 @@ async def async_setup_entry(
     for device_id, device in coordinator.devices.items():
         for description in ALL_SENSORS:
             # Check if sensor applies to this device type
-            if (
-                description.product_types
-                and device.product_type in description.product_types
-            ):
-                entities.append(
-                    AlnorSensor(coordinator, device_id, description)
-                )
+            if description.product_types and device.product_type in description.product_types:
+                entities.append(AlnorSensor(coordinator, device_id, description))
                 _LOGGER.debug(
                     "Added %s sensor for device %s",
                     description.key,

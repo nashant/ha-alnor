@@ -1,11 +1,8 @@
 """Test the Alnor sensor platform."""
+
 from unittest.mock import patch
 
-import pytest
-
 from homeassistant.core import HomeAssistant
-
-from custom_components.alnor.const import DOMAIN
 
 
 async def test_sensor_setup(

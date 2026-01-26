@@ -1,9 +1,8 @@
 """Test the Alnor config flow."""
-from unittest.mock import AsyncMock, patch
+
+from unittest.mock import patch
 
 from alnor_sdk.exceptions import CloudAuthenticationError
-import pytest
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -145,11 +144,14 @@ async def test_options_flow(
     mock_config_entry.add_to_hass(hass)
 
     # Set up the coordinator data
-    with patch(
-        "custom_components.alnor.coordinator.AlnorCloudApi",
-        return_value=mock_api,
-    ), patch(
-        "custom_components.alnor.coordinator.CloudClient",
+    with (
+        patch(
+            "custom_components.alnor.coordinator.AlnorCloudApi",
+            return_value=mock_api,
+        ),
+        patch(
+            "custom_components.alnor.coordinator.CloudClient",
+        ),
     ):
         from custom_components.alnor.coordinator import AlnorDataUpdateCoordinator
 
@@ -195,11 +197,14 @@ async def test_options_flow_local_config(
     mock_config_entry.add_to_hass(hass)
 
     # Set up the coordinator data
-    with patch(
-        "custom_components.alnor.coordinator.AlnorCloudApi",
-        return_value=mock_api,
-    ), patch(
-        "custom_components.alnor.coordinator.CloudClient",
+    with (
+        patch(
+            "custom_components.alnor.coordinator.AlnorCloudApi",
+            return_value=mock_api,
+        ),
+        patch(
+            "custom_components.alnor.coordinator.CloudClient",
+        ),
     ):
         from custom_components.alnor.coordinator import AlnorDataUpdateCoordinator
 
@@ -266,11 +271,14 @@ async def test_options_flow_local_config_invalid_ip(
     mock_config_entry.add_to_hass(hass)
 
     # Set up the coordinator data
-    with patch(
-        "custom_components.alnor.coordinator.AlnorCloudApi",
-        return_value=mock_api,
-    ), patch(
-        "custom_components.alnor.coordinator.CloudClient",
+    with (
+        patch(
+            "custom_components.alnor.coordinator.AlnorCloudApi",
+            return_value=mock_api,
+        ),
+        patch(
+            "custom_components.alnor.coordinator.CloudClient",
+        ),
     ):
         from custom_components.alnor.coordinator import AlnorDataUpdateCoordinator
 

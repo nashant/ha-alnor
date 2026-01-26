@@ -1,10 +1,10 @@
 """Binary sensor platform for Alnor integration."""
+
 from __future__ import annotations
 
 import logging
 
 from alnor_sdk.models import ProductType
-
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,

@@ -1,9 +1,9 @@
 """Test the Alnor coordinator."""
-from unittest.mock import AsyncMock, patch
 
-from alnor_sdk.exceptions import CloudAuthenticationError
+from unittest.mock import patch
+
 import pytest
-
+from alnor_sdk.exceptions import CloudAuthenticationError
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import UpdateFailed

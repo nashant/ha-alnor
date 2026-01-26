@@ -1,11 +1,11 @@
 """Fan platform for Alnor integration."""
+
 from __future__ import annotations
 
 import logging
 from typing import Any
 
 from alnor_sdk.models import DeviceMode, ProductType
-
 from homeassistant.components.fan import FanEntity, FanEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -168,9 +168,7 @@ class AlnorFan(AlnorEntity, FanEntity):
             # Default to 50% speed or last known speed
             state = self.coordinator.data.get(self.device_id)
             last_speed = state.speed if state and state.speed > 0 else 50
-            await self.async_set_percentage(
-                ranged_value_to_percentage(SPEED_RANGE, last_speed)
-            )
+            await self.async_set_percentage(ranged_value_to_percentage(SPEED_RANGE, last_speed))
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the fan."""

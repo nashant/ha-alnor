@@ -1,8 +1,8 @@
 """Test the Alnor select platform."""
+
 from unittest.mock import patch
 
 from alnor_sdk.models import DeviceMode
-import pytest
 
 from homeassistant.components.select import (
     ATTR_OPTION,
@@ -11,8 +11,6 @@ from homeassistant.components.select import (
 )
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant
-
-from custom_components.alnor.const import DOMAIN
 
 
 async def test_select_setup(

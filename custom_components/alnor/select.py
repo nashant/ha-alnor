@@ -1,10 +1,10 @@
 """Select platform for Alnor integration."""
+
 from __future__ import annotations
 
 import logging
 
 from alnor_sdk.models import DeviceMode, ProductType
-
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant

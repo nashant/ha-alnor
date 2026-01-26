@@ -1,8 +1,8 @@
 """Test the Alnor fan platform."""
+
 from unittest.mock import patch
 
 from alnor_sdk.models import DeviceMode
-import pytest
 
 from homeassistant.components.fan import (
     ATTR_PERCENTAGE,
@@ -15,8 +15,6 @@ from homeassistant.components.fan import (
 )
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant
-
-from custom_components.alnor.const import DOMAIN
 
 
 async def test_fan_setup(

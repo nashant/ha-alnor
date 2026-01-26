@@ -1,12 +1,11 @@
 """Test the Alnor binary sensor platform."""
+
 from unittest.mock import patch
 
 from alnor_sdk.models import DeviceMode, DeviceState
-import pytest
-
 from homeassistant.core import HomeAssistant
 
-from custom_components.alnor.const import ATTR_FAULT_CODE, DOMAIN
+from custom_components.alnor.const import ATTR_FAULT_CODE
 
 
 async def test_binary_sensor_setup(
