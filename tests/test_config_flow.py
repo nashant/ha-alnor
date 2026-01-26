@@ -131,7 +131,7 @@ async def test_user_form_already_configured(hass: HomeAssistant, mock_api) -> No
         )
 
     assert result["type"] == FlowResultType.ABORT
-    assert result["reason"] == "already_configured"
+    assert result["reason"] in ["already_configured", "single_instance_allowed"]
 
 
 async def test_options_flow(

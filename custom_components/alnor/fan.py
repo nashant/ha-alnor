@@ -105,7 +105,7 @@ class AlnorFan(AlnorEntity, FanEntity):
         state = self.coordinator.data.get(self.device_id)
         if not state or not state.mode:
             return None
-        return state.mode.value
+        return state.mode.value if hasattr(state.mode, "value") else state.mode
 
     async def async_set_percentage(self, percentage: int) -> None:
         """Set the speed percentage of the fan."""

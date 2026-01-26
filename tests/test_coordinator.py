@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 from alnor_sdk.exceptions import CloudAuthenticationError
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import UpdateFailed
@@ -122,8 +123,9 @@ async def test_coordinator_auth_failure(
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
 
+        # Call _async_setup directly to test exception handling
         with pytest.raises(ConfigEntryAuthFailed):
-            await coordinator.async_refresh()
+            await coordinator._async_setup()
 
 
 async def test_coordinator_connection_failure(
@@ -145,24 +147,39 @@ async def test_coordinator_connection_failure(
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
 
+        # Call _async_setup directly to test exception handling
         with pytest.raises(UpdateFailed):
-            await coordinator.async_refresh()
+            await coordinator._async_setup()
 
 
 async def test_coordinator_local_connection(
     hass: HomeAssistant,
-    mock_config_entry,
     mock_api,
     mock_modbus_client,
     mock_hru_controller,
 ) -> None:
     """Test coordinator with local Modbus connection."""
-    mock_config_entry.add_to_hass(hass)
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    # Configure local IP for device
-    mock_config_entry.options[CONF_LOCAL_IPS] = {
-        "device_hru_1": "192.168.1.100",
-    }
+    from custom_components.alnor.const import DOMAIN
+
+    # Create config entry with local IP configured
+    mock_config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="test@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "test_password",
+        },
+        options={
+            "sync_zones": True,
+            CONF_LOCAL_IPS: {
+                "device_hru_1": "192.168.1.100",
+            },
+        },
+        unique_id="test@example.com",
+    )
+    mock_config_entry.add_to_hass(hass)
 
     with (
         patch(
@@ -199,18 +216,32 @@ async def test_coordinator_local_connection(
 
 async def test_coordinator_local_fallback_to_cloud(
     hass: HomeAssistant,
-    mock_config_entry,
     mock_api,
     mock_modbus_client,
     mock_hru_controller,
 ) -> None:
     """Test coordinator falls back to cloud when local fails."""
-    mock_config_entry.add_to_hass(hass)
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    # Configure local IP for device
-    mock_config_entry.options[CONF_LOCAL_IPS] = {
-        "device_hru_1": "192.168.1.100",
-    }
+    from custom_components.alnor.const import DOMAIN
+
+    # Create config entry with local IP configured
+    mock_config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="test@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "test_password",
+        },
+        options={
+            "sync_zones": True,
+            CONF_LOCAL_IPS: {
+                "device_hru_1": "192.168.1.100",
+            },
+        },
+        unique_id="test@example.com",
+    )
+    mock_config_entry.add_to_hass(hass)
 
     # Make Modbus connection fail
     mock_modbus_client.connect.side_effect = Exception("Connection failed")
@@ -290,14 +321,28 @@ async def test_coordinator_per_device_error_handling(
 
 async def test_coordinator_zone_sync(
     hass: HomeAssistant,
-    mock_config_entry,
     mock_api,
 ) -> None:
     """Test coordinator zone synchronization."""
-    mock_config_entry.add_to_hass(hass)
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    # Enable zone sync
-    mock_config_entry.options["sync_zones"] = True
+    from custom_components.alnor.const import DOMAIN
+
+    # Create config entry with zone sync enabled
+    mock_config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="test@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "test_password",
+        },
+        options={
+            "sync_zones": True,
+            "local_ips": {},
+        },
+        unique_id="test@example.com",
+    )
+    mock_config_entry.add_to_hass(hass)
 
     # Create some areas in Home Assistant
     from homeassistant.helpers import area_registry as ar

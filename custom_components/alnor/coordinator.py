@@ -285,11 +285,12 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
     ) -> BaseDeviceController | None:
         """Create controller for device type."""
         # Map product type to controller
+        # Note: HRU controller has different signature than others
         if device.product_type == ProductType.HEAT_RECOVERY_UNIT:
             return HeatRecoveryUnitController(client, device.device_id, device.product_id)
 
         elif device.product_type == ProductType.EXHAUST_FAN:
-            return ExhaustFanController(client, device.device_id, device.product_id)
+            return ExhaustFanController(client, device)
 
         elif device.product_type in [
             ProductType.CO2_SENSOR_VMI,
@@ -297,7 +298,7 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             ProductType.HUMIDITY_SENSOR_VMI,
             ProductType.HUMIDITY_SENSOR_VMS,
         ]:
-            return SensorController(client, device.device_id, device.product_id)
+            return SensorController(client, device)
 
         # Unknown device type
         _LOGGER.warning(
@@ -385,12 +386,14 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             name=device.name,
             manufacturer="Alnor",
             model=(
-                device.product_type.value
-                if hasattr(device.product_type, "value")
-                else str(device.product_type)
-            )
-            if device.product_type
-            else "Unknown",
+                (
+                    device.product_type.value
+                    if hasattr(device.product_type, "value")
+                    else str(device.product_type)
+                )
+                if device.product_type
+                else "Unknown"
+            ),
         )
 
         # Link to bridge

@@ -6,7 +6,7 @@ import pytest
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from custom_components.alnor import async_reload_entry, async_setup_entry, async_unload_entry
+from custom_components.alnor import async_reload_entry, async_setup_entry
 from custom_components.alnor.const import DOMAIN
 
 
@@ -20,10 +20,6 @@ async def test_setup_entry(
 
     with (
         patch(
-            "custom_components.alnor.AlnorCloudApi",
-            return_value=mock_api,
-        ),
-        patch(
             "custom_components.alnor.coordinator.AlnorCloudApi",
             return_value=mock_api,
         ),
@@ -31,7 +27,7 @@ async def test_setup_entry(
             "custom_components.alnor.coordinator.CloudClient",
         ),
     ):
-        assert await async_setup_entry(hass, mock_config_entry)
+        assert await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
 
     # Verify coordinator was created and stored
@@ -52,10 +48,6 @@ async def test_setup_entry_api_failure(
 
     with (
         patch(
-            "custom_components.alnor.AlnorCloudApi",
-            return_value=mock_api,
-        ),
-        patch(
             "custom_components.alnor.coordinator.AlnorCloudApi",
             return_value=mock_api,
         ),
@@ -74,10 +66,6 @@ async def test_unload_entry(
 
     with (
         patch(
-            "custom_components.alnor.AlnorCloudApi",
-            return_value=mock_api,
-        ),
-        patch(
             "custom_components.alnor.coordinator.AlnorCloudApi",
             return_value=mock_api,
         ),
@@ -85,11 +73,11 @@ async def test_unload_entry(
             "custom_components.alnor.coordinator.CloudClient",
         ),
     ):
-        assert await async_setup_entry(hass, mock_config_entry)
+        assert await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
 
     # Now unload
-    assert await async_unload_entry(hass, mock_config_entry)
+    assert await hass.config_entries.async_unload(mock_config_entry.entry_id)
     await hass.async_block_till_done()
 
     # Verify coordinator was removed

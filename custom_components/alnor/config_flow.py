@@ -35,6 +35,10 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            # Check if already configured
+            await self.async_set_unique_id(user_input[CONF_USERNAME].lower())
+            self._abort_if_unique_id_configured()
+
             # Validate credentials
             try:
                 api = AlnorCloudApi()
@@ -42,10 +46,6 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input[CONF_USERNAME],
                     user_input[CONF_PASSWORD],
                 )
-
-                # Check if already configured
-                await self.async_set_unique_id(user_input[CONF_USERNAME].lower())
-                self._abort_if_unique_id_configured()
 
                 # Create entry
                 return self.async_create_entry(
@@ -94,7 +94,6 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
         self._devices: list[dict[str, Any]] = []
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:

@@ -68,7 +68,7 @@ class AlnorModeSelect(AlnorEntity, SelectEntity):
         state = self.coordinator.data.get(self.device_id)
         if not state or not state.mode:
             return None
-        return state.mode.value
+        return state.mode.value if hasattr(state.mode, "value") else state.mode
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected mode."""
