@@ -31,7 +31,7 @@ def mock_api():
     api.get_bridges = AsyncMock(
         return_value=[
             {
-                "id": "bridge123",
+                "bridgeId": "bridge123",
                 "name": "Main Bridge",
             }
         ]
@@ -39,19 +39,19 @@ def mock_api():
     api.get_devices = AsyncMock(
         return_value=[
             {
-                "id": "device_hru_1",
+                "deviceId": "device_hru_1",
                 "name": "Living Room HRU",
                 "productId": "0001c89f",
                 "host": "192.168.1.100",
             },
             {
-                "id": "device_exhaust_1",
+                "deviceId": "device_exhaust_1",
                 "name": "Bathroom Fan",
                 "productId": "0001c844",
                 "host": "",
             },
             {
-                "id": "device_co2_1",
+                "deviceId": "device_co2_1",
                 "name": "Office CO2 Sensor",
                 "productId": "0001c845",
                 "host": "",
@@ -60,10 +60,10 @@ def mock_api():
     )
     api.list_zones = AsyncMock(
         return_value=[
-            {"id": "zone1", "name": "Living Room"},
+            {"zoneId": "zone1", "name": "Living Room"},
         ]
     )
-    api.create_zone = AsyncMock(return_value={"id": "zone2", "name": "Bedroom"})
+    api.create_zone = AsyncMock(return_value={"zoneId": "zone2", "name": "Bedroom"})
     return api
 
 

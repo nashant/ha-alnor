@@ -36,6 +36,31 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
+def _get_id(obj: dict | object, id_key: str) -> str | None:
+    """Safely get ID from dict or object.
+
+    Args:
+        obj: Dictionary or object to extract ID from
+        id_key: Key name to look for
+
+    Returns:
+        ID string if found, None otherwise
+    """
+    # Try as object with attribute
+    if hasattr(obj, id_key):
+        value = getattr(obj, id_key, None)
+        if value:
+            return value
+
+    # Try as dictionary
+    if isinstance(obj, dict):
+        value = obj.get(id_key)
+        if value:
+            return value
+
+    return None
+
+
 class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
     """Class to manage fetching Alnor data from API."""
 
@@ -165,13 +190,18 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
             # Get devices for each bridge
             for bridge in self.bridges:
-                # Bridge might be a Device object or dict - handle both
-                if hasattr(bridge, "device_id"):
-                    bridge_id = bridge.device_id
-                    bridge_name = getattr(bridge, "name", bridge_id)
+                # Use helper to safely get ID
+                bridge_id = _get_id(bridge, "bridgeId")
+
+                # Get name safely
+                if hasattr(bridge, "name"):
+                    bridge_name = bridge.name
                 else:
-                    bridge_id = bridge.get("id") or bridge.get("device_id")
-                    bridge_name = bridge.get("name", bridge_id)
+                    bridge_name = (
+                        bridge.get("name", bridge_id)
+                        if isinstance(bridge, dict)
+                        else str(bridge_id)
+                    )
 
                 if not bridge_id:
                     _LOGGER.warning("Bridge missing ID, skipping: %s", bridge)
@@ -187,11 +217,8 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
                 # Set up each device
                 for device_data in devices:
-                    # Device might be a Device object or dict - handle both
-                    if hasattr(device_data, "device_id"):
-                        device_id = device_data.device_id
-                    else:
-                        device_id = device_data.get("id") or device_data.get("device_id")
+                    # Use helper to safely get ID
+                    device_id = _get_id(device_data, "deviceId")
 
                     if not device_id:
                         _LOGGER.warning("Device missing ID, skipping: %s", device_data)
@@ -347,8 +374,20 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         area_registry = ar.async_get(self.hass)
 
         for bridge in self.bridges:
-            bridge_id = bridge["id"]
-            bridge_name = bridge.get("name", bridge_id)
+            # Use helper to safely get ID
+            bridge_id = _get_id(bridge, "bridgeId")
+
+            # Get name safely
+            if hasattr(bridge, "name"):
+                bridge_name = bridge.name
+            else:
+                bridge_name = (
+                    bridge.get("name", bridge_id) if isinstance(bridge, dict) else str(bridge_id)
+                )
+
+            if not bridge_id:
+                _LOGGER.warning("Bridge missing ID in zone sync, skipping: %s", bridge)
+                continue
 
             try:
                 # Get existing zones (if API supports it)
@@ -405,7 +444,8 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         bridge = None
         if bridge_id:
             for b in self.bridges:
-                if b["id"] == bridge_id:
+                b_id = _get_id(b, "bridgeId")
+                if b_id == bridge_id:
                     bridge = b
                     break
 
@@ -426,7 +466,9 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
         # Link to bridge
         if bridge:
-            device_info["via_device"] = (DOMAIN, bridge["id"])
+            b_id = _get_id(bridge, "bridgeId")
+            if b_id:
+                device_info["via_device"] = (DOMAIN, b_id)
 
         # Map to HA area based on zone
         # Note: This would require zone information from device data
@@ -438,16 +480,25 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         """Get device info for a bridge."""
         bridge = None
         for b in self.bridges:
-            if b["id"] == bridge_id:
+            b_id = _get_id(b, "bridgeId")
+            if b_id == bridge_id:
                 bridge = b
                 break
 
         if not bridge:
             return DeviceInfo(identifiers={(DOMAIN, bridge_id)})
 
+        # Get name safely
+        if hasattr(bridge, "name"):
+            bridge_name = bridge.name
+        else:
+            bridge_name = (
+                bridge.get("name", "Alnor Bridge") if isinstance(bridge, dict) else "Alnor Bridge"
+            )
+
         return DeviceInfo(
             identifiers={(DOMAIN, bridge_id)},
-            name=bridge.get("name", "Alnor Bridge"),
+            name=bridge_name,
             manufacturer="Alnor",
             model="Gateway",
         )
