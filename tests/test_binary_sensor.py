@@ -42,11 +42,11 @@ async def test_binary_sensor_setup(
         await hass.async_block_till_done()
 
     # Verify fault sensors were created
-    state = hass.states.get("binary_sensor.living_room_hru_fault")
+    state = hass.states.get("binary_sensor.alnor_living_room_hru_fault")
     assert state is not None
     assert state.state == "off"  # No fault
 
-    state = hass.states.get("binary_sensor.bathroom_fan_fault")
+    state = hass.states.get("binary_sensor.alnor_bathroom_fan_fault")
     assert state is not None
 
 
@@ -99,7 +99,7 @@ async def test_binary_sensor_fault_detected(
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
 
-        state = hass.states.get("binary_sensor.living_room_hru_fault")
+        state = hass.states.get("binary_sensor.alnor_living_room_hru_fault")
         assert state is not None
         assert state.state == "on"  # Fault detected
         assert state.attributes[ATTR_FAULT_CODE] == 42

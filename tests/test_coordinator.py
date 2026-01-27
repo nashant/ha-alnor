@@ -409,6 +409,6 @@ async def test_coordinator_get_device_info(
 
         device_info = coordinator.get_device_info("device_hru_1")
 
-        assert device_info["name"] == "Living Room HRU"
+        assert device_info["name"] == "Alnor Living Room HRU"
         assert device_info["manufacturer"] == "Alnor"
         assert "identifiers" in device_info

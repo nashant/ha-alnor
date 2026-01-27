@@ -571,6 +571,26 @@ Contributions are welcome! See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for gu
 
 ### Development Setup
 
+#### Option 1: Local Testing with Docker (Recommended)
+
+Test your changes in a live Home Assistant instance:
+
+```bash
+# Start Home Assistant with your integration mounted
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+```
+
+Access Home Assistant at http://localhost:8123
+
+See [DEV_SETUP.md](DEV_SETUP.md) for complete setup instructions including HACS installation and testing workflow.
+
+#### Option 2: Unit Testing
+
+Run tests without a full Home Assistant instance:
+
 ```bash
 # Clone repository
 git clone https://github.com/nashant/ha-alnor.git

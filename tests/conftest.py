@@ -4,7 +4,7 @@ from collections.abc import Generator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from alnor_sdk.models import Device, DeviceState, ProductType, VentilationMode
+from alnor_sdk.models import Bridge, Device, DeviceState, ProductType, VentilationMode
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -28,34 +28,38 @@ def mock_api():
     api = MagicMock()
     # SDK now takes credentials in __init__, connect() takes no args
     api.connect = AsyncMock(return_value=None)
+    api.disconnect = AsyncMock(return_value=None)
     api.get_bridges = AsyncMock(
         return_value=[
-            {
-                "bridgeId": "bridge123",
-                "name": "Main Bridge",
-            }
+            Bridge(
+                bridge_id="bridge123",
+                name="Main Bridge",
+            )
         ]
     )
     api.get_devices = AsyncMock(
         return_value=[
-            {
-                "deviceId": "device_hru_1",
-                "name": "Living Room HRU",
-                "productId": "0001c89f",
-                "host": "192.168.1.100",
-            },
-            {
-                "deviceId": "device_exhaust_1",
-                "name": "Bathroom Fan",
-                "productId": "0001c844",
-                "host": "",
-            },
-            {
-                "deviceId": "device_co2_1",
-                "name": "Office CO2 Sensor",
-                "productId": "0001c845",
-                "host": "",
-            },
+            Device(
+                device_id="device_hru_1",
+                name="Living Room HRU",
+                product_id="0001c89f",
+                product_type=ProductType.HEAT_RECOVERY_UNIT,
+                host="192.168.1.100",
+            ),
+            Device(
+                device_id="device_exhaust_1",
+                name="Bathroom Fan",
+                product_id="0001c844",
+                product_type=ProductType.EXHAUST_FAN,
+                host="",
+            ),
+            Device(
+                device_id="device_co2_1",
+                name="Office CO2 Sensor",
+                product_id="0001c845",
+                product_type=ProductType.CO2_SENSOR_VMI,
+                host="",
+            ),
         ]
     )
     api.list_zones = AsyncMock(

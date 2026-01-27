@@ -35,13 +35,10 @@ async def async_setup_entry(
 
     entities = []
 
-    # Add fan entity for each controllable device
+    # Add fan entity for exhaust fans only (HRUs use climate entity)
     for device_id, device in coordinator.devices.items():
-        # Only create fan for HRU and exhaust fans
-        if device.product_type in [
-            ProductType.HEAT_RECOVERY_UNIT,
-            ProductType.EXHAUST_FAN,
-        ]:
+        # Only create fan for exhaust fans
+        if device.product_type == ProductType.EXHAUST_FAN:
             if device_id in coordinator.controllers:
                 entities.append(AlnorFan(coordinator, device_id))
                 _LOGGER.debug("Added fan entity for device %s", device.name)

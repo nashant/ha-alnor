@@ -19,6 +19,26 @@
         "data": {
           "password": "Password"
         }
+      },
+      "humidity_setup": {
+        "title": "Configure Humidity Control",
+        "description": "Configure automatic humidity-based ventilation control.\n\nProgress: {progress}\n\nEntity IDs will use: climate.alnor_{device_slug} and switch.alnor_{device_slug}_humidity_control",
+        "data": {
+          "device_name": "Device Name",
+          "humidity_sensors": "Humidity Sensors",
+          "humidity_target": "Target Humidity",
+          "humidity_hysteresis": "Hysteresis",
+          "humidity_high_mode": "High Humidity Mode",
+          "humidity_low_mode": "Low Humidity Mode"
+        },
+        "data_description": {
+          "device_name": "Custom name for this device (used in entity IDs)",
+          "humidity_sensors": "Select one or more humidity sensors to monitor. The maximum value will be used.",
+          "humidity_target": "Target humidity level in percent",
+          "humidity_hysteresis": "Creates a band (target ± hysteresis) to prevent rapid mode switching",
+          "humidity_high_mode": "Ventilation mode to use when humidity exceeds target + hysteresis",
+          "humidity_low_mode": "Ventilation mode to use when humidity drops below target - hysteresis"
+        }
       }
     },
     "error": {
@@ -35,14 +55,16 @@
     "step": {
       "init": {
         "title": "Alnor Options",
-        "description": "Configure zone synchronization and local connections.",
+        "description": "Configure zone synchronization, local connections, and humidity control.",
         "data": {
           "sync_zones": "Synchronize zones with Home Assistant areas",
-          "configure_local": "Configure local Modbus TCP connections"
+          "configure_local": "Configure local Modbus TCP connections",
+          "configure_humidity": "Configure automatic humidity control"
         },
         "data_description": {
           "sync_zones": "Automatically create Alnor zones matching your Home Assistant areas",
-          "configure_local": "Set up local IP addresses for faster response and offline operation"
+          "configure_local": "Set up local IP addresses for faster response and offline operation",
+          "configure_humidity": "Set up automatic ventilation control based on humidity levels"
         }
       },
       "local_config": {
@@ -51,11 +73,65 @@
         "data_description": {
           "local_ip": "Optional: Enter device IP address for local Modbus TCP connection (port 502)"
         }
+      },
+      "humidity_config": {
+        "title": "Configure Humidity Control",
+        "description": "Configure automatic humidity-based ventilation control.\n\nProgress: {progress}\n\nDevice: {device_name}\nEntity IDs: climate.alnor_{device_slug} and switch.alnor_{device_slug}_humidity_control",
+        "data": {
+          "device_name": "Device Name",
+          "humidity_sensors": "Humidity Sensors",
+          "humidity_target": "Target Humidity",
+          "humidity_hysteresis": "Hysteresis",
+          "humidity_high_mode": "High Humidity Mode",
+          "humidity_low_mode": "Low Humidity Mode"
+        },
+        "data_description": {
+          "device_name": "Custom name for this device (used in entity IDs)",
+          "humidity_sensors": "Select one or more humidity sensors to monitor. The maximum value will be used. Leave empty to disable automatic control.",
+          "humidity_target": "Target humidity level in percent",
+          "humidity_hysteresis": "Creates a band (target ± hysteresis) to prevent rapid mode switching",
+          "humidity_high_mode": "Ventilation mode to use when humidity exceeds target + hysteresis",
+          "humidity_low_mode": "Ventilation mode to use when humidity drops below target - hysteresis"
+        }
       }
     },
     "error": {
       "timeout": "Connection to device timed out. Check the IP address and network connectivity.",
       "cannot_connect": "Cannot connect to device at this IP address. Verify the IP is correct and port 502 is accessible."
+    }
+  },
+  "entity": {
+    "climate": {
+      "alnor_climate": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "standby": "Standby",
+              "away": "Away",
+              "home": "Home",
+              "home_plus": "Home Plus",
+              "auto": "Auto",
+              "party": "Party"
+            }
+          }
+        }
+      }
+    },
+    "humidifier": {
+      "alnor_humidifier": {
+        "state_attributes": {
+          "mode": {
+            "state": {
+              "standby": "Standby",
+              "away": "Away",
+              "home": "Home",
+              "home_plus": "Home Plus",
+              "auto": "Auto",
+              "party": "Party"
+            }
+          }
+        }
+      }
     }
   }
 }

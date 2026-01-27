@@ -33,6 +33,17 @@ async def test_user_form(hass: HomeAssistant, mock_api) -> None:
         )
         await hass.async_block_till_done()
 
+    # Should show humidity setup form for HRU device
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "humidity_setup"
+
+    # Skip humidity configuration (submit empty form)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {},
+    )
+    await hass.async_block_till_done()
+
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["title"] == "test@example.com"
     assert result["data"] == {

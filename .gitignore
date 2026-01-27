@@ -1,6 +1,9 @@
 # Claude Code
 .claude/
 
+# Docker development environment
+ha-dev-config/
+
 # Environment variables
 .env
 .env.local

@@ -39,20 +39,20 @@ async def test_sensor_setup(
         await hass.async_block_till_done()
 
     # Verify HRU sensors were created
-    state = hass.states.get("sensor.living_room_hru_indoor_temperature")
+    state = hass.states.get("sensor.alnor_living_room_hru_indoor_temperature")
     assert state is not None
     assert state.state == "22.5"
 
-    state = hass.states.get("sensor.living_room_hru_outdoor_temperature")
+    state = hass.states.get("sensor.alnor_living_room_hru_outdoor_temperature")
     assert state is not None
     assert state.state == "10.0"
 
-    state = hass.states.get("sensor.living_room_hru_filter_days_remaining")
+    state = hass.states.get("sensor.alnor_living_room_hru_filter_days_remaining")
     assert state is not None
     assert state.state == "60"
 
     # Verify CO2 sensor was created
-    state = hass.states.get("sensor.office_co2_sensor_co2_level")
+    state = hass.states.get("sensor.alnor_office_co2_sensor_co2_level")
     assert state is not None
     assert state.state == "650"
 
@@ -89,19 +89,19 @@ async def test_sensor_values(
         await hass.async_block_till_done()
 
         # Check various sensor values
-        state = hass.states.get("sensor.living_room_hru_exhaust_fan_speed")
+        state = hass.states.get("sensor.alnor_living_room_hru_exhaust_fan_speed")
         assert state is not None
         assert state.state == "45"
         assert state.attributes["unit_of_measurement"] == "%"
 
-        state = hass.states.get("sensor.living_room_hru_supply_fan_speed")
+        state = hass.states.get("sensor.alnor_living_room_hru_supply_fan_speed")
         assert state is not None
         assert state.state == "48"
 
-        state = hass.states.get("sensor.living_room_hru_bypass_position")
+        state = hass.states.get("sensor.alnor_living_room_hru_bypass_position")
         assert state is not None
         assert state.state == "0"
 
-        state = hass.states.get("sensor.living_room_hru_preheater_demand")
+        state = hass.states.get("sensor.alnor_living_room_hru_preheater_demand")
         assert state is not None
         assert state.state == "10"

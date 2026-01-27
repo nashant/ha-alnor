@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -84,6 +85,7 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
         # Track setup state
         self._setup_complete = False
+        self._setup_lock = asyncio.Lock()
 
         # Determine update interval based on connection modes
         update_interval = UPDATE_INTERVAL_CLOUD
@@ -98,10 +100,13 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
     async def _async_update_data(self) -> dict[str, DeviceState]:
         """Fetch data from API."""
-        # Run setup on first update
+        # Run setup on first update (with lock to prevent race condition)
         if not self._setup_complete:
-            await self._async_setup()
-            self._setup_complete = True
+            async with self._setup_lock:
+                # Check again after acquiring lock
+                if not self._setup_complete:
+                    await self._setup_integration()
+                    self._setup_complete = True
 
         states: dict[str, DeviceState] = {}
 
@@ -159,8 +164,8 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
         return states
 
-    async def _async_setup(self) -> None:
-        """Set up the coordinator - called once on first update."""
+    async def _setup_integration(self) -> None:
+        """Set up the integration - discover devices and create controllers."""
         _LOGGER.debug("Setting up Alnor coordinator")
 
         # Get credentials from config entry
@@ -168,9 +173,11 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         password = self.config_entry.data[CONF_PASSWORD]
 
         # Create and connect to API
+        _LOGGER.info("Creating AlnorCloudApi instance")
         self.api = AlnorCloudApi(username=username, password=password)
 
         try:
+            _LOGGER.info("Calling api.connect()")
             await self.api.connect()
             _LOGGER.info("Successfully connected to Alnor Cloud API")
 
@@ -190,23 +197,15 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
             # Get devices for each bridge
             for bridge in self.bridges:
-                # Use helper to safely get ID
-                bridge_id = _get_id(bridge, "bridgeId")
-
-                # Get name safely
-                if hasattr(bridge, "name"):
-                    bridge_name = bridge.name
-                else:
-                    bridge_name = (
-                        bridge.get("name", bridge_id)
-                        if isinstance(bridge, dict)
-                        else str(bridge_id)
-                    )
+                # SDK returns Bridge objects with snake_case attributes
+                bridge_id = bridge.bridge_id
+                bridge_name = bridge.name if bridge.name else bridge_id
 
                 if not bridge_id:
                     _LOGGER.warning("Bridge missing ID, skipping: %s", bridge)
                     continue
 
+                # SDK returns Device objects
                 devices = await self.api.get_devices(bridge_id)
                 _LOGGER.info(
                     "Discovered %d device(s) on bridge %s",
@@ -215,45 +214,24 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                 )
                 _LOGGER.debug("Device data for bridge %s: %s", bridge_id, devices)
 
-                # Set up each device
-                for device_data in devices:
-                    # Use helper to safely get ID
-                    device_id = _get_id(device_data, "deviceId")
+                # Set up each device (SDK returns Device objects)
+                for device in devices:
+                    device_id = device.device_id
 
                     if not device_id:
-                        _LOGGER.warning("Device missing ID, skipping: %s", device_data)
+                        _LOGGER.warning("Device missing ID, skipping: %s", device)
                         continue
 
-                    # Get product type from product_id
-                    if hasattr(device_data, "product_id"):
-                        product_id = device_data.product_id
-                    else:
-                        product_id = device_data.get("productId") or device_data.get(
-                            "product_id", ""
-                        )
-                    product_type = ProductType.from_product_id(product_id)
+                    # Device object has product_type already set
+                    product_type = device.product_type
                     if not product_type:
                         _LOGGER.warning(
-                            "Unknown product ID %s for device %s, skipping",
-                            product_id,
+                            "Unknown product type for device %s, skipping",
                             device_id,
                         )
                         continue
 
-                    # Create Device object
-                    # If device_data is already a Device object, use it directly
-                    if isinstance(device_data, Device):
-                        device = device_data
-                    else:
-                        device = Device(
-                            device_id=device_id,
-                            product_id=product_id,
-                            name=device_data.get("name", "Unknown Device"),
-                            product_type=product_type,
-                            host=device_data.get("host", ""),
-                            zone_id=device_data.get("zoneId"),
-                        )
-
+                    # SDK returns Device objects, store directly
                     self.devices[device_id] = device
                     self.device_to_bridge[device_id] = bridge_id
 
@@ -374,16 +352,9 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         area_registry = ar.async_get(self.hass)
 
         for bridge in self.bridges:
-            # Use helper to safely get ID
-            bridge_id = _get_id(bridge, "bridgeId")
-
-            # Get name safely
-            if hasattr(bridge, "name"):
-                bridge_name = bridge.name
-            else:
-                bridge_name = (
-                    bridge.get("name", bridge_id) if isinstance(bridge, dict) else str(bridge_id)
-                )
+            # SDK returns Bridge objects with snake_case attributes
+            bridge_id = bridge.bridge_id
+            bridge_name = bridge.name if bridge.name else bridge_id
 
             if not bridge_id:
                 _LOGGER.warning("Bridge missing ID in zone sync, skipping: %s", bridge)
@@ -449,9 +420,16 @@ class AlnorDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                     bridge = b
                     break
 
+        # Use custom device name from config if available
+        custom_name = self.config_entry.options.get(f"device_name_{device_id}")
+        if custom_name:
+            device_name = f"Alnor {custom_name}"
+        else:
+            device_name = f"Alnor {device.name}"
+
         device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},
-            name=device.name,
+            name=device_name,
             manufacturer="Alnor",
             model=(
                 (

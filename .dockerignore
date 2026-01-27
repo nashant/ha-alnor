@@ -1,0 +1,38 @@
+# Development environment
+ha-dev-config/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Testing
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+*.md
+docs/
+
+# CI/CD
+.github/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/

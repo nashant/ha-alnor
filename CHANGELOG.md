@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0](https://github.com/nashant/ha-alnor/compare/v1.1.1...v2.0.0) (TBD)
+
+### BREAKING CHANGES
+
+* **climate:** Heat Recovery Units now use Climate entity instead of Fan entity
+  - Entity IDs change: `fan.{device}` → `climate.{device}` for HRU devices
+  - Users must update automations and dashboards referencing HRU fan entities
+  - Exhaust fans remain as fan entities (no changes)
+
+### Features
+
+* **climate:** add Climate entity for Heat Recovery Units ([#TBD](https://github.com/nashant/ha-alnor/issues/TBD))
+  - Current temperature display (supply air temperature)
+  - Fan modes: low, medium, high (speed control)
+  - Preset modes: standby, away, home, home_plus, auto, party
+  - HVAC modes: OFF and FAN_ONLY
+  - Extended attributes: all temperatures, preheater status, connection mode
+* **climate:** add optional humidity control with hysteresis ([#TBD](https://github.com/nashant/ha-alnor/issues/TBD))
+  - Link external humidity sensor to HRU via integration options
+  - Set target humidity percentage via climate.set_humidity service
+  - Automatic ventilation mode switching based on humidity thresholds
+  - Configurable hysteresis (deadband) to prevent oscillation
+  - User-configurable high/low humidity modes
+  - 2-minute cooldown to prevent rapid mode switching
+* **switch:** add humidity control switch entity ([#TBD](https://github.com/nashant/ha-alnor/issues/TBD))
+  - Enable/disable automatic humidity control per HRU device
+  - Only available when humidity sensor is configured
+
+### Migration Guide
+
+1. **Update automations:** Replace `fan.{hru_device}` with `climate.{hru_device}`
+2. **Update dashboards:** Replace fan cards with climate cards for HRU devices
+3. **Update service calls:**
+   - Use `climate.set_hvac_mode` instead of `fan.turn_on`/`fan.turn_off`
+   - Use `climate.set_fan_mode` for speed control (low/medium/high)
+   - Use `climate.set_preset_mode` for ventilation modes
+4. **Note:** Exhaust fans remain as fan entities with no changes
+
+### Added
+
+* Climate platform support
+* Switch platform support
+* Humidity configuration in options flow
+* Per-device humidity settings
+* Comprehensive test suite for climate and switch entities
+
 ## [1.1.1](https://github.com/nashant/ha-alnor/compare/v1.1.0...v1.1.1) (2026-01-26)
 
 

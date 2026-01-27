@@ -42,11 +42,11 @@ async def test_button_setup(
         await hass.async_block_till_done()
 
     # Verify filter reset button was created for HRU only
-    state = hass.states.get("button.living_room_hru_reset_filter_timer")
+    state = hass.states.get("button.alnor_living_room_hru_reset_filter_timer")
     assert state is not None
 
     # Exhaust fan should not have filter reset button
-    state = hass.states.get("button.bathroom_fan_reset_filter_timer")
+    state = hass.states.get("button.alnor_bathroom_fan_reset_filter_timer")
     assert state is None
 
 
@@ -84,7 +84,7 @@ async def test_button_press(
         await hass.services.async_call(
             BUTTON_DOMAIN,
             SERVICE_PRESS,
-            {ATTR_ENTITY_ID: "button.living_room_hru_reset_filter_timer"},
+            {ATTR_ENTITY_ID: "button.alnor_living_room_hru_reset_filter_timer"},
             blocking=True,
         )
 

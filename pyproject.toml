@@ -29,6 +29,7 @@ ensure_newline_before_comments = true
 skip_glob = [
     "tests/test_fan.py",
     "tests/test_select.py",
+    "tests/test_climate.py",
 ]
 
 [tool.ruff]
@@ -57,6 +58,7 @@ ignore = [
 # Disable I001 (import sorting) for files where ruff and isort disagree on aliased import grouping
 "tests/test_fan.py" = ["I001"]
 "tests/test_select.py" = ["I001"]
+"tests/test_climate.py" = ["I001"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

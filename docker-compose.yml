@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  homeassistant:
+    container_name: ha-alnor-dev
+    image: homeassistant/home-assistant:latest
+    volumes:
+      # Persistent config directory (creates ha-dev-config in current directory)
+      - ./ha-dev-config:/config
+      # Mount the custom component for development
+      - ./custom_components:/config/custom_components:ro
+      # Auto-detect host timezone
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    ports:
+      - "8123:8123"
+    restart: unless-stopped
