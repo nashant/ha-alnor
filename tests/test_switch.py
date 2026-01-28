@@ -1,13 +1,13 @@
 """Test switch platform."""
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
-from alnor_sdk.models import DeviceState, ProductType, VentilationMode
 import pytest
+from alnor_sdk.models import DeviceState, VentilationMode
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 
-from custom_components.alnor.const import CONF_HUMIDITY_SENSORS, DOMAIN
+from custom_components.alnor.const import CONF_HUMIDITY_SENSORS
 
 
 @pytest.fixture
