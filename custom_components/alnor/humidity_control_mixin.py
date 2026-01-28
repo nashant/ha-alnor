@@ -63,9 +63,7 @@ class HumidityControlMixin:
             Maximum humidity value from all sensors, or None if unavailable
         """
         humidity_sensors_key = f"{CONF_HUMIDITY_SENSORS}_{self.device_id}"
-        humidity_sensor_ids = self.coordinator.config_entry.options.get(
-            humidity_sensors_key, []
-        )
+        humidity_sensor_ids = self.coordinator.config_entry.options.get(humidity_sensors_key, [])
 
         if not humidity_sensor_ids:
             _LOGGER.debug("No humidity sensors configured for device %s", self.device_id)

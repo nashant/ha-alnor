@@ -160,7 +160,9 @@ class AlnorHumidityControlSwitch(AlnorEntity, SwitchEntity, RestoreEntity):
                         if enable:
                             if hasattr(entity, "enable_humidity_control"):
                                 entity.enable_humidity_control()
-                                _LOGGER.info("Enabled humidity control for device: %s", self.device_id)
+                                _LOGGER.info(
+                                    "Enabled humidity control for device: %s", self.device_id
+                                )
                                 return
                             else:
                                 _LOGGER.warning(
@@ -170,7 +172,9 @@ class AlnorHumidityControlSwitch(AlnorEntity, SwitchEntity, RestoreEntity):
                         else:
                             if hasattr(entity, "disable_humidity_control"):
                                 entity.disable_humidity_control()
-                                _LOGGER.info("Disabled humidity control for device: %s", self.device_id)
+                                _LOGGER.info(
+                                    "Disabled humidity control for device: %s", self.device_id
+                                )
                                 return
                             else:
                                 _LOGGER.warning(

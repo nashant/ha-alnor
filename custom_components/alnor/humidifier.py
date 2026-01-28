@@ -17,10 +17,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
 
 from .const import (
-    CONF_HUMIDITY_COOLDOWN,
-    CONF_HUMIDITY_HIGH_MODE,
-    CONF_HUMIDITY_HYSTERESIS,
-    CONF_HUMIDITY_LOW_MODE,
     CONF_HUMIDITY_SENSORS,
     CONF_HUMIDITY_TARGET,
     DEFAULT_STARTUP_SPEED,
@@ -234,7 +230,9 @@ class AlnorHumidifier(AlnorEntity, HumidifierEntity, HumidityControlMixin):
             await self.coordinator.async_request_refresh()
             _LOGGER.debug("Mode change completed for device: %s", self.device_id)
         except ValueError as err:
-            _LOGGER.error("Invalid ventilation mode '%s' for device %s: %s", mode, self.device_id, err)
+            _LOGGER.error(
+                "Invalid ventilation mode '%s' for device %s: %s", mode, self.device_id, err
+            )
         except Exception as err:
             _LOGGER.error(
                 "Failed to set mode for device %s: %s",

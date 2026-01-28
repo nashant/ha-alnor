@@ -58,7 +58,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 await modbus_client.disconnect()
                 _LOGGER.info("Closed Modbus connection for device %s", device_id)
             except Exception as err:
-                _LOGGER.warning("Error disconnecting Modbus client for device %s: %s", device_id, err)
+                _LOGGER.warning(
+                    "Error disconnecting Modbus client for device %s: %s", device_id, err
+                )
 
         # Close API session to prevent unclosed client warnings
         if coordinator.api:

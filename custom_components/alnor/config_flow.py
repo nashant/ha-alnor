@@ -111,59 +111,62 @@ def _build_humidity_schema(
 
     # Only include sensor selector if not locked
     if not sensors_locked:
-        schema[vol.Optional(
-            CONF_HUMIDITY_SENSORS, default=current_sensors or []
-        )] = selector.EntitySelector(
-            selector.EntitySelectorConfig(
-                domain="sensor",
-                device_class="humidity",
-                multiple=True,
+        schema[vol.Optional(CONF_HUMIDITY_SENSORS, default=current_sensors or [])] = (
+            selector.EntitySelector(
+                selector.EntitySelectorConfig(
+                    domain="sensor",
+                    device_class="humidity",
+                    multiple=True,
+                )
             )
         )
 
     # Only show config fields if requested (after sensors are selected)
     if show_config_fields:
-        schema.update({
-            vol.Optional(
-                CONF_HUMIDITY_TARGET, default=current_target or DEFAULT_HUMIDITY_TARGET
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=0, max=100, step=1, unit_of_measurement="%", mode="slider"
-                )
-            ),
-            vol.Optional(
-                CONF_HUMIDITY_HYSTERESIS, default=current_hysteresis or DEFAULT_HUMIDITY_HYSTERESIS
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=1, max=20, step=1, unit_of_measurement="%", mode="slider"
-                )
-            ),
-            vol.Optional(
-                CONF_HUMIDITY_HIGH_MODE, default=current_high_mode or DEFAULT_HUMIDITY_HIGH_MODE
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=["auto", "away", "home", "home_plus", "party"],
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="ventilation_mode",
-                )
-            ),
-            vol.Optional(
-                CONF_HUMIDITY_LOW_MODE, default=current_low_mode or DEFAULT_HUMIDITY_LOW_MODE
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=["auto", "away", "home", "home_plus", "standby"],
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="ventilation_mode",
-                )
-            ),
-            vol.Optional(
-                CONF_HUMIDITY_COOLDOWN, default=current_cooldown or DEFAULT_HUMIDITY_COOLDOWN
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=0, max=300, step=10, unit_of_measurement="s", mode="slider"
-                )
-            ),
-        })
+        schema.update(
+            {
+                vol.Optional(
+                    CONF_HUMIDITY_TARGET, default=current_target or DEFAULT_HUMIDITY_TARGET
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0, max=100, step=1, unit_of_measurement="%", mode="slider"
+                    )
+                ),
+                vol.Optional(
+                    CONF_HUMIDITY_HYSTERESIS,
+                    default=current_hysteresis or DEFAULT_HUMIDITY_HYSTERESIS,
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=1, max=20, step=1, unit_of_measurement="%", mode="slider"
+                    )
+                ),
+                vol.Optional(
+                    CONF_HUMIDITY_HIGH_MODE, default=current_high_mode or DEFAULT_HUMIDITY_HIGH_MODE
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=["auto", "away", "home", "home_plus", "party"],
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key="ventilation_mode",
+                    )
+                ),
+                vol.Optional(
+                    CONF_HUMIDITY_LOW_MODE, default=current_low_mode or DEFAULT_HUMIDITY_LOW_MODE
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=["auto", "away", "home", "home_plus", "standby"],
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key="ventilation_mode",
+                    )
+                ),
+                vol.Optional(
+                    CONF_HUMIDITY_COOLDOWN, default=current_cooldown or DEFAULT_HUMIDITY_COOLDOWN
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0, max=300, step=10, unit_of_measurement="s", mode="slider"
+                    )
+                ),
+            }
+        )
 
     return schema
 
@@ -178,7 +181,7 @@ def _format_hru_info(devices: dict[str, Any]) -> str:
         Formatted string with device names and slugified versions
     """
     info_lines = []
-    for device_id, device in devices.items():
+    for device in devices.values():
         name = device.name if device.name else "Unknown"
         # Show device name with slugified version to help match with entities
         device_slug = slugify(name)
@@ -317,7 +320,9 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 # Show form again with config fields
                 device_name = current_device.name if current_device.name else "Unknown Device"
                 device_slug = slugify(device_name)
-                progress_text = f"Device {self._current_device_index + 1} of {len(self._hru_devices_list)}"
+                progress_text = (
+                    f"Device {self._current_device_index + 1} of {len(self._hru_devices_list)}"
+                )
 
                 # Build schema with config fields shown and sensors locked
                 schema_dict = _build_humidity_schema(
@@ -343,11 +348,11 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
             # Store the full config (merge temp input if available)
-            if self._showing_config_fields and hasattr(self, '_temp_user_input'):
+            if self._showing_config_fields and hasattr(self, "_temp_user_input"):
                 # Merge sensor selection with config fields
                 full_input = {**self._temp_user_input, **user_input}
                 _store_device_humidity_config(self._humidity_config, current_device_id, full_input)
-                delattr(self, '_temp_user_input')
+                delattr(self, "_temp_user_input")
             else:
                 # No sensors selected or direct submission
                 _store_device_humidity_config(self._humidity_config, current_device_id, user_input)
@@ -667,7 +672,9 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
         device_name = current_device.name if current_device.name else "Unknown Device"
 
         # Get current values for this device
-        current_device_name = self.config_entry.options.get(f"device_name_{current_device_id}", device_name)
+        current_device_name = self.config_entry.options.get(
+            f"device_name_{current_device_id}", device_name
+        )
         current_sensors = self.config_entry.options.get(
             f"{CONF_HUMIDITY_SENSORS}_{current_device_id}", []
         )

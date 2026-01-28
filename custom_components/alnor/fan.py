@@ -15,7 +15,7 @@ from homeassistant.util.percentage import (
     ranged_value_to_percentage,
 )
 
-from .const import CONF_HUMIDITY_SENSORS, DOMAIN
+from .const import DOMAIN
 from .coordinator import AlnorDataUpdateCoordinator
 from .entity import AlnorEntity
 
