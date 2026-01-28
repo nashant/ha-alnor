@@ -401,6 +401,7 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 "device_name": device_name,
                 "device_slug": device_slug,
                 "progress": progress_text,
+                "sensor_info": "",  # Empty initially, populated after sensor selection
             },
         )
 
