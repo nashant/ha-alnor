@@ -38,6 +38,154 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
+def _store_device_humidity_config(
+    config_dict: dict[str, Any], device_id: str, user_input: dict[str, Any]
+) -> None:
+    """Store humidity configuration for a device.
+
+    Args:
+        config_dict: Dictionary to store config in
+        device_id: The device ID to store config for
+        user_input: User input containing humidity configuration
+    """
+    # Store custom device name if provided
+    device_name = user_input.get("device_name", "")
+    if device_name and device_name.strip():
+        config_dict[f"device_name_{device_id}"] = device_name.strip()
+
+    # Get the list of humidity sensors from user input (multi-select returns list)
+    sensor_list = user_input.get(CONF_HUMIDITY_SENSORS, [])
+
+    if sensor_list:
+        # Store with device-specific keys
+        config_dict[f"{CONF_HUMIDITY_SENSORS}_{device_id}"] = sensor_list
+        config_dict[f"{CONF_HUMIDITY_HYSTERESIS}_{device_id}"] = user_input.get(
+            CONF_HUMIDITY_HYSTERESIS, DEFAULT_HUMIDITY_HYSTERESIS
+        )
+        config_dict[f"{CONF_HUMIDITY_TARGET}_{device_id}"] = user_input.get(
+            CONF_HUMIDITY_TARGET, DEFAULT_HUMIDITY_TARGET
+        )
+        config_dict[f"{CONF_HUMIDITY_HIGH_MODE}_{device_id}"] = user_input.get(
+            CONF_HUMIDITY_HIGH_MODE, DEFAULT_HUMIDITY_HIGH_MODE
+        )
+        config_dict[f"{CONF_HUMIDITY_LOW_MODE}_{device_id}"] = user_input.get(
+            CONF_HUMIDITY_LOW_MODE, DEFAULT_HUMIDITY_LOW_MODE
+        )
+        config_dict[f"{CONF_HUMIDITY_COOLDOWN}_{device_id}"] = user_input.get(
+            CONF_HUMIDITY_COOLDOWN, DEFAULT_HUMIDITY_COOLDOWN
+        )
+
+
+def _build_humidity_schema(
+    device_name: str,
+    current_sensors: list[str] | None = None,
+    current_target: int | None = None,
+    current_hysteresis: int | None = None,
+    current_high_mode: str | None = None,
+    current_low_mode: str | None = None,
+    current_cooldown: int | None = None,
+    sensors_locked: bool = False,
+    show_config_fields: bool = True,
+) -> dict[vol.Optional, Any]:
+    """Build the humidity configuration schema with default values.
+
+    Args:
+        device_name: Name of the device
+        current_sensors: Current sensor list (defaults to empty list)
+        current_target: Current target humidity (defaults to DEFAULT_HUMIDITY_TARGET)
+        current_hysteresis: Current hysteresis (defaults to DEFAULT_HUMIDITY_HYSTERESIS)
+        current_high_mode: Current high mode (defaults to DEFAULT_HUMIDITY_HIGH_MODE)
+        current_low_mode: Current low mode (defaults to DEFAULT_HUMIDITY_LOW_MODE)
+        current_cooldown: Current cooldown (defaults to DEFAULT_HUMIDITY_COOLDOWN)
+        sensors_locked: If True, exclude sensor selector (sensors already configured)
+        show_config_fields: If True, show target/hysteresis/modes/cooldown fields
+
+    Returns:
+        Dictionary mapping voluptuous keys to selectors
+    """
+    schema = {
+        vol.Optional("device_name", default=device_name): selector.TextSelector(
+            selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
+        ),
+    }
+
+    # Only include sensor selector if not locked
+    if not sensors_locked:
+        schema[vol.Optional(
+            CONF_HUMIDITY_SENSORS, default=current_sensors or []
+        )] = selector.EntitySelector(
+            selector.EntitySelectorConfig(
+                domain="sensor",
+                device_class="humidity",
+                multiple=True,
+            )
+        )
+
+    # Only show config fields if requested (after sensors are selected)
+    if show_config_fields:
+        schema.update({
+            vol.Optional(
+                CONF_HUMIDITY_TARGET, default=current_target or DEFAULT_HUMIDITY_TARGET
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=0, max=100, step=1, unit_of_measurement="%", mode="slider"
+                )
+            ),
+            vol.Optional(
+                CONF_HUMIDITY_HYSTERESIS, default=current_hysteresis or DEFAULT_HUMIDITY_HYSTERESIS
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=1, max=20, step=1, unit_of_measurement="%", mode="slider"
+                )
+            ),
+            vol.Optional(
+                CONF_HUMIDITY_HIGH_MODE, default=current_high_mode or DEFAULT_HUMIDITY_HIGH_MODE
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["auto", "away", "home", "home_plus", "party"],
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="ventilation_mode",
+                )
+            ),
+            vol.Optional(
+                CONF_HUMIDITY_LOW_MODE, default=current_low_mode or DEFAULT_HUMIDITY_LOW_MODE
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["auto", "away", "home", "home_plus", "standby"],
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="ventilation_mode",
+                )
+            ),
+            vol.Optional(
+                CONF_HUMIDITY_COOLDOWN, default=current_cooldown or DEFAULT_HUMIDITY_COOLDOWN
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=0, max=300, step=10, unit_of_measurement="s", mode="slider"
+                )
+            ),
+        })
+
+    return schema
+
+
+def _format_hru_info(devices: dict[str, Any]) -> str:
+    """Format HRU device information for display.
+
+    Args:
+        devices: Dict mapping device_id to Device object
+
+    Returns:
+        Formatted string with device names and slugified versions
+    """
+    info_lines = []
+    for device_id, device in devices.items():
+        name = device.name if device.name else "Unknown"
+        # Show device name with slugified version to help match with entities
+        device_slug = slugify(name)
+        info_lines.append(f"• {name} → Entity IDs will use: alnor_{device_slug}")
+    return "\n".join(info_lines)
+
+
 class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Alnor."""
 
@@ -147,44 +295,65 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Configure humidity sensors for HRU devices during initial setup.
 
         This presents one device at a time with clean field names.
+        Two-step process: first select sensors, then show config if sensors selected.
         """
         # Initialize device list on first call
         if not self._hru_devices_list:
             self._hru_devices_list = list(self._hru_devices.items())
             self._current_device_index = 0
+            self._showing_config_fields = False
 
         if user_input is not None:
-            # Store config for current device
-            current_device_id, _current_device = self._hru_devices_list[self._current_device_index]
+            current_device_id, current_device = self._hru_devices_list[self._current_device_index]
 
-            # Store custom device name if provided
-            device_name = user_input.get("device_name", "")
-            if device_name and device_name.strip():
-                self._humidity_config[f"device_name_{current_device_id}"] = device_name.strip()
+            # Check if this is sensor selection (no config fields) or full config submission
+            sensors_selected = user_input.get(CONF_HUMIDITY_SENSORS, [])
 
-            # Get the list of humidity sensors from user input (multi-select returns list)
-            sensor_list = user_input.get(CONF_HUMIDITY_SENSORS, [])
+            # If we just selected sensors and they're not empty, show config fields
+            if sensors_selected and not self._showing_config_fields:
+                self._showing_config_fields = True
+                self._temp_user_input = user_input  # Store device name and sensors
 
-            if sensor_list:
-                # Store with device-specific keys
-                self._humidity_config[f"{CONF_HUMIDITY_SENSORS}_{current_device_id}"] = sensor_list
-                self._humidity_config[f"{CONF_HUMIDITY_HYSTERESIS}_{current_device_id}"] = user_input.get(
-                    CONF_HUMIDITY_HYSTERESIS, DEFAULT_HUMIDITY_HYSTERESIS
-                )
-                self._humidity_config[f"{CONF_HUMIDITY_TARGET}_{current_device_id}"] = user_input.get(
-                    CONF_HUMIDITY_TARGET, DEFAULT_HUMIDITY_TARGET
-                )
-                self._humidity_config[f"{CONF_HUMIDITY_HIGH_MODE}_{current_device_id}"] = user_input.get(
-                    CONF_HUMIDITY_HIGH_MODE, DEFAULT_HUMIDITY_HIGH_MODE
-                )
-                self._humidity_config[f"{CONF_HUMIDITY_LOW_MODE}_{current_device_id}"] = user_input.get(
-                    CONF_HUMIDITY_LOW_MODE, DEFAULT_HUMIDITY_LOW_MODE
-                )
-                self._humidity_config[f"{CONF_HUMIDITY_COOLDOWN}_{current_device_id}"] = user_input.get(
-                    CONF_HUMIDITY_COOLDOWN, DEFAULT_HUMIDITY_COOLDOWN
+                # Show form again with config fields
+                device_name = current_device.name if current_device.name else "Unknown Device"
+                device_slug = slugify(device_name)
+                progress_text = f"Device {self._current_device_index + 1} of {len(self._hru_devices_list)}"
+
+                # Build schema with config fields shown and sensors locked
+                schema_dict = _build_humidity_schema(
+                    device_name=user_input.get("device_name", device_name),
+                    current_sensors=sensors_selected,
+                    show_config_fields=True,
+                    sensors_locked=True,  # Lock sensors after selection (read-only in step 2)
                 )
 
-            # Move to next device
+                # Show selected sensors (now locked)
+                sensor_list = "\n".join([f"  • {sensor}" for sensor in sensors_selected])
+                sensor_info = f"Selected sensors (locked):\n{sensor_list}\n\n"
+
+                return self.async_show_form(
+                    step_id="humidity_setup",
+                    data_schema=vol.Schema(schema_dict),
+                    description_placeholders={
+                        "device_name": device_name,
+                        "device_slug": device_slug,
+                        "progress": progress_text,
+                        "sensor_info": sensor_info,
+                    },
+                )
+
+            # Store the full config (merge temp input if available)
+            if self._showing_config_fields and hasattr(self, '_temp_user_input'):
+                # Merge sensor selection with config fields
+                full_input = {**self._temp_user_input, **user_input}
+                _store_device_humidity_config(self._humidity_config, current_device_id, full_input)
+                delattr(self, '_temp_user_input')
+            else:
+                # No sensors selected or direct submission
+                _store_device_humidity_config(self._humidity_config, current_device_id, user_input)
+
+            # Reset for next device
+            self._showing_config_fields = False
             self._current_device_index += 1
 
             # If more devices, show next device's config
@@ -210,52 +379,14 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         current_device_id, current_device = self._hru_devices_list[self._current_device_index]
         device_name = current_device.name if current_device.name else "Unknown Device"
 
-        # Build schema with clean field names (no device_id suffix)
-        schema_dict = {
-            vol.Optional("device_name", default=device_name): selector.TextSelector(
-                selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
-            ),
-            vol.Optional(CONF_HUMIDITY_SENSORS, default=[]): selector.EntitySelector(
-                selector.EntitySelectorConfig(
-                    domain="sensor",
-                    device_class="humidity",
-                    multiple=True,
-                )
-            ),
-            vol.Optional(CONF_HUMIDITY_TARGET, default=DEFAULT_HUMIDITY_TARGET): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=0, max=100, step=1, unit_of_measurement="%", mode="slider"
-                )
-            ),
-            vol.Optional(CONF_HUMIDITY_HYSTERESIS, default=DEFAULT_HUMIDITY_HYSTERESIS): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=1, max=20, step=1, unit_of_measurement="%", mode="slider"
-                )
-            ),
-            vol.Optional(CONF_HUMIDITY_HIGH_MODE, default=DEFAULT_HUMIDITY_HIGH_MODE): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=["auto", "away", "home", "home_plus", "party"],
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="ventilation_mode",
-                )
-            ),
-            vol.Optional(CONF_HUMIDITY_LOW_MODE, default=DEFAULT_HUMIDITY_LOW_MODE): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=["auto", "away", "home", "home_plus", "standby"],
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="ventilation_mode",
-                )
-            ),
-            vol.Optional(CONF_HUMIDITY_COOLDOWN, default=DEFAULT_HUMIDITY_COOLDOWN): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=0, max=300, step=10, unit_of_measurement="s", mode="slider"
-                )
-            ),
-        }
+        # Build schema - show only sensor selection initially
+        schema_dict = _build_humidity_schema(
+            device_name,
+            show_config_fields=False,  # Hide config fields initially
+        )
 
         # Show progress
         progress_text = f"Device {self._current_device_index + 1} of {len(self._hru_devices_list)}"
-        from homeassistant.util import slugify
         device_slug = slugify(device_name)
 
         return self.async_show_form(
@@ -267,21 +398,6 @@ class AlnorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 "progress": progress_text,
             },
         )
-
-    def _format_hru_info(self, devices: dict[str, Any]) -> str:
-        """Format HRU device information for display.
-
-        Args:
-            devices: Dict mapping device_id to Device object
-        """
-        info_lines = []
-        for device_id, device in devices.items():
-            name = device.name if device.name else "Unknown"
-            # Show device name with slugified version to help match with entities
-            from homeassistant.util import slugify
-            device_slug = slugify(name)
-            info_lines.append(f"• {name} → Entity IDs will use: alnor_{device_slug}")
-        return "\n".join(info_lines)
 
     async def async_step_reauth(self, entry_data: dict[str, Any]) -> FlowResult:
         """Handle reauth when credentials are invalid."""
@@ -500,47 +616,35 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
             # No HRU devices, skip this step
             return await self.async_step_init()
 
-        # Initialize device list on first call
+        # Initialize device list on first call - only include devices with sensors configured
         if not self._hru_devices_list:
-            self._hru_devices_list = list(hru_devices.items())
+            # Filter to only HRUs that have humidity sensors configured
+            hru_devices_with_sensors = {
+                device_id: device
+                for device_id, device in hru_devices.items()
+                if self.config_entry.options.get(f"{CONF_HUMIDITY_SENSORS}_{device_id}")
+            }
+
+            if not hru_devices_with_sensors:
+                # No HRU devices with humidity sensors, skip this step
+                return await self.async_step_init()
+
+            self._hru_devices_list = list(hru_devices_with_sensors.items())
             self._current_device_index = 0
 
         if user_input is not None:
-            # Store config for current device
-            current_device_id, _current_device = self._hru_devices_list[self._current_device_index]
+            current_device_id, current_device = self._hru_devices_list[self._current_device_index]
 
-            # Store custom device name if provided
-            device_name = user_input.get("device_name", "")
-            if device_name and device_name.strip():
-                self._humidity_config[f"device_name_{current_device_id}"] = device_name.strip()
+            # Get existing sensors for this device (will always exist in options flow now)
+            existing_sensors = self.config_entry.options.get(
+                f"{CONF_HUMIDITY_SENSORS}_{current_device_id}", []
+            )
 
-            # Get the list of humidity sensors from user input (multi-select returns list)
-            sensor_list = user_input.get(CONF_HUMIDITY_SENSORS, [])
+            # In options flow, sensors are always preserved (read-only)
+            user_input[CONF_HUMIDITY_SENSORS] = existing_sensors
 
-            if sensor_list:
-                # Store with device-specific keys
-                self._humidity_config[f"{CONF_HUMIDITY_SENSORS}_{current_device_id}"] = sensor_list
-                self._humidity_config[f"{CONF_HUMIDITY_HYSTERESIS}_{current_device_id}"] = user_input.get(
-                    CONF_HUMIDITY_HYSTERESIS, DEFAULT_HUMIDITY_HYSTERESIS
-                )
-                self._humidity_config[f"{CONF_HUMIDITY_TARGET}_{current_device_id}"] = user_input.get(
-                    CONF_HUMIDITY_TARGET, DEFAULT_HUMIDITY_TARGET
-                )
-                self._humidity_config[f"{CONF_HUMIDITY_HIGH_MODE}_{current_device_id}"] = user_input.get(
-                    CONF_HUMIDITY_HIGH_MODE, DEFAULT_HUMIDITY_HIGH_MODE
-                )
-                self._humidity_config[f"{CONF_HUMIDITY_LOW_MODE}_{current_device_id}"] = user_input.get(
-                    CONF_HUMIDITY_LOW_MODE, DEFAULT_HUMIDITY_LOW_MODE
-                )
-                self._humidity_config[f"{CONF_HUMIDITY_COOLDOWN}_{current_device_id}"] = user_input.get(
-                    CONF_HUMIDITY_COOLDOWN, DEFAULT_HUMIDITY_COOLDOWN
-                )
-            else:
-                # User left sensors empty - clear any existing config for this device
-                for key in list(self.config_entry.options.keys()):
-                    if key.endswith(f"_{current_device_id}"):
-                        # Don't copy old config to new options
-                        pass
+            # Store the config
+            _store_device_humidity_config(self._humidity_config, current_device_id, user_input)
 
             # Move to next device
             self._current_device_index += 1
@@ -564,8 +668,12 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
 
         # Get current values for this device
         current_device_name = self.config_entry.options.get(f"device_name_{current_device_id}", device_name)
-        sensors_key = f"{CONF_HUMIDITY_SENSORS}_{current_device_id}"
-        current_sensors = self.config_entry.options.get(sensors_key, [])
+        current_sensors = self.config_entry.options.get(
+            f"{CONF_HUMIDITY_SENSORS}_{current_device_id}", []
+        )
+
+        # In options flow, sensors are always locked (read-only)
+        # and config fields are always shown (since we filtered to devices with sensors)
         current_hysteresis = self.config_entry.options.get(
             f"{CONF_HUMIDITY_HYSTERESIS}_{current_device_id}", DEFAULT_HUMIDITY_HYSTERESIS
         )
@@ -583,59 +691,42 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
         )
 
         # Build schema with clean field names (no device_id suffix)
-        schema_dict = {
-            vol.Optional("device_name", default=current_device_name): selector.TextSelector(
-                selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
-            ),
-            vol.Optional(CONF_HUMIDITY_SENSORS, default=current_sensors): selector.EntitySelector(
-                selector.EntitySelectorConfig(
-                    domain="sensor",
-                    device_class="humidity",
-                    multiple=True,
-                )
-            ),
-            vol.Optional(CONF_HUMIDITY_TARGET, default=current_target): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=0, max=100, step=1, unit_of_measurement="%", mode="slider"
-                )
-            ),
-            vol.Optional(CONF_HUMIDITY_HYSTERESIS, default=current_hysteresis): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=1, max=20, step=1, unit_of_measurement="%", mode="slider"
-                )
-            ),
-            vol.Optional(CONF_HUMIDITY_HIGH_MODE, default=current_high_mode): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=["auto", "away", "home", "home_plus", "party"],
-                    translation_key="ventilation_mode",
-                )
-            ),
-            vol.Optional(CONF_HUMIDITY_LOW_MODE, default=current_low_mode): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=["auto", "away", "home", "home_plus", "standby"],
-                    translation_key="ventilation_mode",
-                )
-            ),
-            vol.Optional(CONF_HUMIDITY_COOLDOWN, default=current_cooldown): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=0, max=300, step=10, unit_of_measurement="s", mode="slider"
-                )
-            ),
-        }
+        # In options flow: sensors always locked, config fields always shown
+        schema_dict = _build_humidity_schema(
+            current_device_name,
+            current_sensors,
+            current_target,
+            current_hysteresis,
+            current_high_mode,
+            current_low_mode,
+            current_cooldown,
+            sensors_locked=True,  # Always locked in options flow
+            show_config_fields=True,  # Always shown since we filtered to devices with sensors
+        )
 
         # Show progress
         progress_text = f"Device {self._current_device_index + 1} of {len(self._hru_devices_list)}"
-        from homeassistant.util import slugify
         device_slug = slugify(device_name)
+
+        # Build description with sensor information (always locked in options flow)
+        sensor_list = "\n".join([f"  • {sensor}" for sensor in current_sensors])
+        sensor_info = (
+            f"Configured sensors (locked):\n{sensor_list}\n\n"
+            "Note: Humidity sensors can only be changed during initial setup.\n"
+            "You can adjust target humidity, modes, and other settings below."
+        )
+
+        description_placeholders = {
+            "device_name": device_name,
+            "device_slug": device_slug,
+            "progress": progress_text,
+            "sensor_info": sensor_info,
+        }
 
         return self.async_show_form(
             step_id="humidity_config",
             data_schema=vol.Schema(schema_dict),
-            description_placeholders={
-                "device_name": device_name,
-                "device_slug": device_slug,
-                "progress": progress_text,
-            },
+            description_placeholders=description_placeholders,
         )
 
     def _format_device_info(self, devices: dict[str, Any]) -> str:
@@ -643,19 +734,4 @@ class AlnorOptionsFlow(config_entries.OptionsFlow):
         info_lines = []
         for device_id, device in devices.items():
             info_lines.append(f"• {device.name} (ID: {device_id})")
-        return "\n".join(info_lines)
-
-    def _format_hru_info(self, devices: dict[str, Any]) -> str:
-        """Format HRU device information for display.
-
-        Args:
-            devices: Dict mapping device_id to Device object
-        """
-        info_lines = []
-        for device_id, device in devices.items():
-            name = device.name if device.name else "Unknown"
-            # Show device name with slugified version to help match with entities
-            from homeassistant.util import slugify
-            device_slug = slugify(name)
-            info_lines.append(f"• {name} → Entity IDs will use: alnor_{device_slug}")
         return "\n".join(info_lines)

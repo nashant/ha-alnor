@@ -123,9 +123,9 @@ async def test_coordinator_auth_failure(
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
 
-        # Call _async_setup directly to test exception handling
+        # Call _setup_integration directly to test exception handling
         with pytest.raises(ConfigEntryAuthFailed):
-            await coordinator._async_setup()
+            await coordinator._setup_integration()
 
 
 async def test_coordinator_connection_failure(
@@ -147,9 +147,9 @@ async def test_coordinator_connection_failure(
     ):
         coordinator = AlnorDataUpdateCoordinator(hass, mock_config_entry)
 
-        # Call _async_setup directly to test exception handling
+        # Call _setup_integration directly to test exception handling
         with pytest.raises(UpdateFailed):
-            await coordinator._async_setup()
+            await coordinator._setup_integration()
 
 
 async def test_coordinator_local_connection(

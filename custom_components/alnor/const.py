@@ -11,12 +11,12 @@ DOMAIN: Final = "alnor"
 # Platforms
 PLATFORMS: list[Platform] = [
     Platform.FAN,
-    Platform.CLIMATE,
     Platform.HUMIDIFIER,
     Platform.SENSOR,
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
     Platform.SWITCH,
+    Platform.SELECT,
 ]
 
 # Configuration keys
@@ -60,3 +60,6 @@ DEFAULT_HUMIDITY_COOLDOWN: Final = 60  # seconds
 DEFAULT_HUMIDITY_TARGET: Final = 60
 DEFAULT_HUMIDITY_HIGH_MODE: Final = "home_plus"
 DEFAULT_HUMIDITY_LOW_MODE: Final = "home"
+
+# Speed control
+DEFAULT_STARTUP_SPEED: Final = 50  # Medium speed (0-100) when turning on ventilation

@@ -218,7 +218,7 @@ class AlnorSensor(AlnorEntity, SensorEntity):
         """Initialize the sensor."""
         super().__init__(coordinator, device_id)
         self.entity_description = description
-        self._attr_unique_id = f"{device_id}_{description.key}"
+        self._attr_unique_id = f"alnor_{device_id}_{description.key}"
 
     @property
     def native_value(self) -> float | int | None:

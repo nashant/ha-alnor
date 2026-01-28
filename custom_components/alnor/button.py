@@ -49,7 +49,7 @@ class AlnorFilterResetButton(AlnorEntity, ButtonEntity):
     ) -> None:
         """Initialize the filter reset button."""
         super().__init__(coordinator, device_id)
-        self._attr_unique_id = f"{device_id}_filter_reset"
+        self._attr_unique_id = f"alnor_{device_id}_filter_reset"
         self._attr_name = "Reset filter timer"
 
     async def async_press(self) -> None:

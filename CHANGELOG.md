@@ -2,138 +2,89 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.0.0](https://github.com/nashant/ha-alnor/compare/v1.1.1...v2.0.0) (TBD)
-
-### BREAKING CHANGES
-
-* **climate:** Heat Recovery Units now use Climate entity instead of Fan entity
-  - Entity IDs change: `fan.{device}` → `climate.{device}` for HRU devices
-  - Users must update automations and dashboards referencing HRU fan entities
-  - Exhaust fans remain as fan entities (no changes)
-
-### Features
-
-* **climate:** add Climate entity for Heat Recovery Units ([#TBD](https://github.com/nashant/ha-alnor/issues/TBD))
-  - Current temperature display (supply air temperature)
-  - Fan modes: low, medium, high (speed control)
-  - Preset modes: standby, away, home, home_plus, auto, party
-  - HVAC modes: OFF and FAN_ONLY
-  - Extended attributes: all temperatures, preheater status, connection mode
-* **climate:** add optional humidity control with hysteresis ([#TBD](https://github.com/nashant/ha-alnor/issues/TBD))
-  - Link external humidity sensor to HRU via integration options
-  - Set target humidity percentage via climate.set_humidity service
-  - Automatic ventilation mode switching based on humidity thresholds
-  - Configurable hysteresis (deadband) to prevent oscillation
-  - User-configurable high/low humidity modes
-  - 2-minute cooldown to prevent rapid mode switching
-* **switch:** add humidity control switch entity ([#TBD](https://github.com/nashant/ha-alnor/issues/TBD))
-  - Enable/disable automatic humidity control per HRU device
-  - Only available when humidity sensor is configured
-
-### Migration Guide
-
-1. **Update automations:** Replace `fan.{hru_device}` with `climate.{hru_device}`
-2. **Update dashboards:** Replace fan cards with climate cards for HRU devices
-3. **Update service calls:**
-   - Use `climate.set_hvac_mode` instead of `fan.turn_on`/`fan.turn_off`
-   - Use `climate.set_fan_mode` for speed control (low/medium/high)
-   - Use `climate.set_preset_mode` for ventilation modes
-4. **Note:** Exhaust fans remain as fan entities with no changes
-
-### Added
-
-* Climate platform support
-* Switch platform support
-* Humidity configuration in options flow
-* Per-device humidity settings
-* Comprehensive test suite for climate and switch entities
-
-## [1.1.1](https://github.com/nashant/ha-alnor/compare/v1.1.0...v1.1.1) (2026-01-26)
-
-
-### Bug Fixes
-
-* **coordinator:** use correct SDK API response keys ([02907b5](https://github.com/nashant/ha-alnor/commit/02907b54ceaa72edfb4e5fd9a69d2d04d9dba41d))
-
-## [1.1.0](https://github.com/nashant/ha-alnor/compare/v1.0.1...v1.1.0) (2026-01-26)
-
-
-### Features
-
-* **ui:** add integration icon ([949eac5](https://github.com/nashant/ha-alnor/commit/949eac5225004b1fd69a88b3179e370c3b18103b))
-
-
-### Bug Fixes
-
-* **coordinator:** handle SDK API response format and fix unclosed sessions ([1ed3bfd](https://github.com/nashant/ha-alnor/commit/1ed3bfdb9e59543ba11f503045c2f567bcdc88fc))
-
-## [1.0.1](https://github.com/nashant/ha-alnor/compare/v1.0.0...v1.0.1) (2026-01-26)
-
-
-### Bug Fixes
-
-* **config:** update AlnorCloudApi usage and add reauth flow ([5dfc4a4](https://github.com/nashant/ha-alnor/commit/5dfc4a484e4562f800e8770440bc1aeb38138393))
-
-## 1.0.0 (2026-01-26)
-
-
-### Bug Fixes
-
-* **ci:** Address failing tests ([335905e](https://github.com/nashant/ha-alnor/commit/335905e7f201468546f2cf8acb9b6d44a9ebefab))
-* **ci:** Only test python 3.13 ([9cf4117](https://github.com/nashant/ha-alnor/commit/9cf41174731a62bf3101ce060d9c69ed6d4e6877))
-* **ci:** Use sdk correctly ([e38cac5](https://github.com/nashant/ha-alnor/commit/e38cac5cb3c421002cbfbd1e11f69c3c03c5f4ac))
-* **ci:** workflow fixes ([40a82d8](https://github.com/nashant/ha-alnor/commit/40a82d81826ce281d05c05fe7797240597803052))
-* **tests:** fix remaining test failures to achieve 100% pass rate ([c77279c](https://github.com/nashant/ha-alnor/commit/c77279cf184050b08b84393f0481f7453cd50a79))
-* **tests:** fix test failures for CI compatibility ([a582062](https://github.com/nashant/ha-alnor/commit/a5820627b57f8e98447d3d34b3588c3e9fdffde6))
-
-# Changelog
-
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] - 2026-01-28
 
-### Added
-- Initial release of Alnor Ventilation integration
-- Support for HRU-PremAir-450 and HRU-PremAir-500 devices
-- Support for VMC-02VJ04 exhaust fans
-- Support for VMS-02C05 CO2 sensors and VMI-02MC02 humidity sensors
-- Dual-mode operation (Cloud API + Local Modbus TCP)
-- Automatic device discovery via Alnor cloud
+### Initial Release
+
+First public release of the Alnor Ventilation integration for Home Assistant.
+
+#### Supported Devices
+- **Heat Recovery Units (HRU)**
+  - HRU-PremAir-450
+  - HRU-PremAir-500
+- **Exhaust Fans**
+  - VMC-02VJ04
+  - VMC Exhaust Fan series
+- **Environmental Sensors**
+  - VMS-02C05 (CO2 Sensor)
+  - VMI-02MC02 (Humidity Sensor)
+
+#### Features
+
+**Device Control**
+- Climate platform for Heat Recovery Units with temperature display and humidity control
+- Humidifier platform for HRUs with humidity sensor integration
+- Fan platform for exhaust fans with speed and preset mode control
+- Select platform for ventilation mode selection
+- Switch platform for toggling automatic humidity control
+
+**Humidity Control**
+- Automatic ventilation adjustment based on external humidity sensors
+- Configurable target humidity with hysteresis to prevent rapid mode switching
+- User-configurable high/low humidity ventilation modes
+- Configurable cooldown period between mode changes
+- Per-device humidity configuration
+- Real-time sensor monitoring with maximum value selection from multiple sensors
+
+**Monitoring**
+- Temperature sensors (indoor, outdoor, supply, exhaust)
+- Fan speed sensors (exhaust and supply fans)
+- Filter status monitoring with days remaining counter
+- Bypass position monitoring
+- Preheater demand monitoring
+- CO2 level sensors
+- Humidity sensors
+- Binary sensors for fault detection with fault codes
+
+**Configuration**
+- UI-based configuration flow with automatic device discovery
+- Options flow for humidity control setup with two-step configuration
+  - Step 1: Select humidity sensors
+  - Step 2: Configure control parameters (only shown when sensors selected)
+- Options flow for local Modbus TCP configuration
 - Zone synchronization with Home Assistant areas
-- Fan platform with speed and preset mode control
-- Comprehensive sensor support (temperatures, speeds, filter status)
-- Binary sensor for fault detection
-- Select platform for mode selection
-- Button platform for filter timer reset
-- Configuration flow with UI setup
-- Options flow for local IP configuration
+- Reauthentication flow
+
+**Connectivity**
+- Dual-mode operation: Cloud API + Local Modbus TCP
+- Automatic device discovery via Alnor cloud
+- Per-device local IP configuration
 - Automatic fallback from local to cloud connection
 - Per-device connection mode tracking
-- GitHub Actions CI/CD pipeline
-- Automated semantic versioning and releases
-- Comprehensive test suite
-- Full documentation
+- Separate update intervals for local (30s) and cloud (60s) connections
 
-<!--
-Changelog format:
+**Other Features**
+- Filter timer reset button
+- Comprehensive test suite (35 tests)
+- Full Home Assistant integration patterns
+- Support for multiple devices per account
+- Entity naming with device names and slugs
+- Proper device info with manufacturer, model, SW version, serial number
 
-## [Version] - YYYY-MM-DD
+#### Technical Details
+- Built on alnor-sdk >= 0.3.1
+- Follows Home Assistant integration best practices
+- Protocol-based humidity control mixin for code reuse
+- Comprehensive error handling and logging
+- Docker development environment
+- CI/CD with GitHub Actions
 
-### Added
-- New features
+---
 
-### Changed
-- Changes to existing functionality
+## Links
 
-### Deprecated
-- Features that will be removed in future versions
-
-### Removed
-- Removed features
-
-### Fixed
-- Bug fixes
-
-### Security
-- Security updates
--->
+- [GitHub Repository](https://github.com/nashant/ha-alnor)
+- [Issue Tracker](https://github.com/nashant/ha-alnor/issues)
+- [Documentation](https://github.com/nashant/ha-alnor)

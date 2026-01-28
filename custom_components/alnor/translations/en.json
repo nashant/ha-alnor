@@ -22,14 +22,15 @@
       },
       "humidity_setup": {
         "title": "Configure Humidity Control",
-        "description": "Configure automatic humidity-based ventilation control.\n\nProgress: {progress}\n\nEntity IDs will use: climate.alnor_{device_slug} and switch.alnor_{device_slug}_humidity_control",
+        "description": "Configure automatic humidity-based ventilation control.\n\nProgress: {progress}\n\n{sensor_info}Entity IDs will use: humidifier.alnor_{device_slug} and switch.alnor_{device_slug}_humidity_control",
         "data": {
           "device_name": "Device Name",
           "humidity_sensors": "Humidity Sensors",
           "humidity_target": "Target Humidity",
           "humidity_hysteresis": "Hysteresis",
           "humidity_high_mode": "High Humidity Mode",
-          "humidity_low_mode": "Low Humidity Mode"
+          "humidity_low_mode": "Low Humidity Mode",
+          "humidity_cooldown": "Mode Change Cooldown"
         },
         "data_description": {
           "device_name": "Custom name for this device (used in entity IDs)",
@@ -37,7 +38,8 @@
           "humidity_target": "Target humidity level in percent",
           "humidity_hysteresis": "Creates a band (target ± hysteresis) to prevent rapid mode switching",
           "humidity_high_mode": "Ventilation mode to use when humidity exceeds target + hysteresis",
-          "humidity_low_mode": "Ventilation mode to use when humidity drops below target - hysteresis"
+          "humidity_low_mode": "Ventilation mode to use when humidity drops below target - hysteresis",
+          "humidity_cooldown": "Minimum time (in seconds) between mode changes to prevent rapid switching"
         }
       }
     },
@@ -76,14 +78,15 @@
       },
       "humidity_config": {
         "title": "Configure Humidity Control",
-        "description": "Configure automatic humidity-based ventilation control.\n\nProgress: {progress}\n\nDevice: {device_name}\nEntity IDs: climate.alnor_{device_slug} and switch.alnor_{device_slug}_humidity_control",
+        "description": "Configure automatic humidity-based ventilation control.\n\nProgress: {progress}\n\nDevice: {device_name}\n\n{sensor_info}",
         "data": {
           "device_name": "Device Name",
           "humidity_sensors": "Humidity Sensors",
           "humidity_target": "Target Humidity",
           "humidity_hysteresis": "Hysteresis",
           "humidity_high_mode": "High Humidity Mode",
-          "humidity_low_mode": "Low Humidity Mode"
+          "humidity_low_mode": "Low Humidity Mode",
+          "humidity_cooldown": "Mode Change Cooldown"
         },
         "data_description": {
           "device_name": "Custom name for this device (used in entity IDs)",
@@ -91,7 +94,8 @@
           "humidity_target": "Target humidity level in percent",
           "humidity_hysteresis": "Creates a band (target ± hysteresis) to prevent rapid mode switching",
           "humidity_high_mode": "Ventilation mode to use when humidity exceeds target + hysteresis",
-          "humidity_low_mode": "Ventilation mode to use when humidity drops below target - hysteresis"
+          "humidity_low_mode": "Ventilation mode to use when humidity drops below target - hysteresis",
+          "humidity_cooldown": "Minimum time (in seconds) between mode changes to prevent rapid switching"
         }
       }
     },

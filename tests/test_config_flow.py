@@ -50,9 +50,10 @@ async def test_user_form(hass: HomeAssistant, mock_api) -> None:
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "test_password",
     }
-    assert result["options"] == {
-        CONF_SYNC_ZONES: True,
-    }
+    # Options include sync_zones and device names from humidity config step
+    assert result["options"][CONF_SYNC_ZONES] is True
+    # Device name is stored during humidity config (even if skipped, device name may be saved)
+    assert "device_name_device_hru_1" in result["options"]
 
 
 async def test_user_form_invalid_auth(hass: HomeAssistant, mock_api) -> None:

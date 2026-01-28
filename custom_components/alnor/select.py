@@ -59,7 +59,7 @@ class AlnorModeSelect(AlnorEntity, SelectEntity):
     ) -> None:
         """Initialize the mode select."""
         super().__init__(coordinator, device_id)
-        self._attr_unique_id = f"{device_id}_mode"
+        self._attr_unique_id = f"alnor_{device_id}_mode"
         self._attr_name = "Mode"
 
     @property

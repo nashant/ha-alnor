@@ -50,10 +50,12 @@ async def test_fan_setup(
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
 
-    # Verify fan entity was created for exhaust fan only (HRU uses climate entity)
+    # Verify fan entity was created only for exhaust fan
+    # HRU without humidity sensors should use select entity (not fan)
     state = hass.states.get("fan.alnor_living_room_hru")
     assert state is None  # HRU should not have fan entity
 
+    # Exhaust fan should get fan entity
     state = hass.states.get("fan.alnor_bathroom_fan")
     assert state is not None
     assert state.state == "on"

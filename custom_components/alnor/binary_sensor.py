@@ -54,7 +54,7 @@ class AlnorFaultSensor(AlnorEntity, BinarySensorEntity):
     ) -> None:
         """Initialize the fault sensor."""
         super().__init__(coordinator, device_id)
-        self._attr_unique_id = f"{device_id}_fault"
+        self._attr_unique_id = f"alnor_{device_id}_fault"
         self._attr_name = "Fault"
 
     @property

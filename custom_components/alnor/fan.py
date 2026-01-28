@@ -15,7 +15,7 @@ from homeassistant.util.percentage import (
     ranged_value_to_percentage,
 )
 
-from .const import DOMAIN
+from .const import CONF_HUMIDITY_SENSORS, DOMAIN
 from .coordinator import AlnorDataUpdateCoordinator
 from .entity import AlnorEntity
 
@@ -35,13 +35,14 @@ async def async_setup_entry(
 
     entities = []
 
-    # Add fan entity for exhaust fans only (HRUs use climate entity)
+    # Add fan entity only for exhaust fans
+    # HRUs use either humidifier (if humidity sensors configured) or select (if no sensors)
     for device_id, device in coordinator.devices.items():
-        # Only create fan for exhaust fans
         if device.product_type == ProductType.EXHAUST_FAN:
+            # Always create fan for exhaust fans
             if device_id in coordinator.controllers:
                 entities.append(AlnorFan(coordinator, device_id))
-                _LOGGER.debug("Added fan entity for device %s", device.name)
+                _LOGGER.debug("Added fan entity for exhaust fan device %s", device.name)
 
     async_add_entities(entities)
 
@@ -72,7 +73,7 @@ class AlnorFan(AlnorEntity, FanEntity):
     ) -> None:
         """Initialize the fan."""
         super().__init__(coordinator, device_id)
-        self._attr_unique_id = f"{device_id}_fan"
+        self._attr_unique_id = f"alnor_{device_id}_fan"
         self._attr_name = None  # Use device name
 
     @property

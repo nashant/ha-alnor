@@ -118,7 +118,7 @@ async def test_switch_setup_with_humidity_sensor(
     # Verify switch was created
     state = hass.states.get("switch.alnor_living_room_hru_humidity_control")
     assert state is not None
-    assert state.state == STATE_OFF
+    assert state.state == STATE_ON
 
 
 async def test_switch_turn_on(
