@@ -46,33 +46,16 @@ async def async_setup_entry(
 
     # Add humidifier entity only for Heat Recovery Units with humidity sensors configured
     for device_id, device in coordinator.devices.items():
-        _LOGGER.debug(
-            "Checking device %s (type: %s) for humidifier setup",
-            device.name,
-            device.product_type,
-        )
         if device.product_type == ProductType.HEAT_RECOVERY_UNIT:
             humidity_sensors_key = f"{CONF_HUMIDITY_SENSORS}_{device_id}"
             humidity_sensors = entry.options.get(humidity_sensors_key)
-            _LOGGER.debug(
-                "HRU device %s: humidity_sensors_key=%s, configured_sensors=%s",
-                device.name,
-                humidity_sensors_key,
-                humidity_sensors,
-            )
             if humidity_sensors:
                 entities.append(AlnorHumidifier(coordinator, device_id))
                 _LOGGER.info(
-                    "Created humidifier entity for device %s",
+                    "Created humidifier entity for device %s with %d sensor(s)",
                     device.name,
+                    len(humidity_sensors),
                 )
-            else:
-                _LOGGER.debug(
-                    "Skipping humidifier entity for device %s - no humidity sensors configured",
-                    device.name,
-                )
-
-    _LOGGER.debug("Adding %d humidifier entities", len(entities))
     async_add_entities(entities)
 
 
@@ -293,10 +276,6 @@ class AlnorHumidifier(AlnorEntity, HumidifierEntity, HumidityControlMixin):
         if self._sensor_listener_unsub is not None:
             self._sensor_listener_unsub()
             self._sensor_listener_unsub = None
-            _LOGGER.debug(
-                "Unsubscribed from humidity sensor changes for device %s",
-                self.device_id,
-            )
 
     @callback
     def _humidity_sensor_changed(self, event: Event) -> None:
@@ -305,27 +284,10 @@ class AlnorHumidifier(AlnorEntity, HumidifierEntity, HumidityControlMixin):
         This is called immediately when any configured humidity sensor changes,
         ensuring updates are event-driven rather than polling-based.
         """
-        _LOGGER.debug(
-            "Humidity sensor callback triggered for device %s: entity=%s",
-            self.device_id,
-            event.data.get("entity_id"),
-        )
-
         # Get the new state
         new_state = event.data.get("new_state")
         if not new_state or new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
-            _LOGGER.debug(
-                "Skipping humidity sensor change - state unavailable/unknown for device %s",
-                self.device_id,
-            )
             return
-
-        _LOGGER.debug(
-            "Humidity sensor changed for device %s: %s = %s",
-            self.device_id,
-            event.data.get("entity_id"),
-            new_state.state,
-        )
 
         # Always update the humidifier entity state immediately to reflect new humidity
         self.async_write_ha_state()
