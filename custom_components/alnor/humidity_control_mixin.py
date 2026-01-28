@@ -55,6 +55,7 @@ class HumidityControlMixin:
         """Initialize humidity control state."""
         self._humidity_control_enabled = False
         self._last_mode_change: datetime | None = None
+        self._last_humidity_config: dict[str, Any] | None = None
 
     def _get_current_humidity(self: HumidityControlEntity) -> int | None:
         """Get maximum humidity from all configured sensors.
@@ -140,8 +141,31 @@ class HumidityControlMixin:
             )
             return
 
-        # Cooldown: prevent rapid mode switching
-        if self._last_mode_change:
+        # Check if configuration has changed - if so, reset cooldown
+        config_changed = False
+        if self._last_humidity_config is not None:
+            # Check if any relevant config value has changed
+            for key in ["target", "hysteresis", "high_mode", "low_mode"]:
+                if self._last_humidity_config.get(key) != config.get(key):
+                    _LOGGER.info(
+                        "Humidity config changed for device %s (%s: %s -> %s), resetting cooldown",
+                        self.device_id,
+                        key,
+                        self._last_humidity_config.get(key),
+                        config.get(key),
+                    )
+                    config_changed = True
+                    break
+
+        # Store current config for next comparison
+        self._last_humidity_config = config.copy()
+
+        # If config changed, reset cooldown to allow immediate mode change
+        if config_changed:
+            self._last_mode_change = None
+
+        # Cooldown: prevent rapid mode switching (unless config just changed)
+        if self._last_mode_change and not config_changed:
             elapsed = (dt_util.utcnow() - self._last_mode_change).total_seconds()
             if elapsed < config["cooldown"]:
                 _LOGGER.debug(
